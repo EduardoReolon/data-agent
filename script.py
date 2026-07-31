@@ -125,6 +125,8 @@ def processar_google_reviews(cliente):
                 foto_relativa = None
                 if foto_url and baixar_foto(foto_url, caminho_foto):
                     foto_relativa = nome_foto
+                
+                data_exata = review.get('iso_date_of_last_update') or review.get('iso_date') or review.get('date', '')
                     
                 review_formatada = {
                     "id": review_id,
@@ -132,7 +134,7 @@ def processar_google_reviews(cliente):
                     "profile_photo_url": foto_relativa,
                     "rating": review.get('rating'),
                     "text": review.get('snippet', ''),
-                    "relative_time_description": review.get('date', '')
+                    "relative_time_description": data_exata
                 }
                 
                 # Conta se é uma pessoa nova que não estava no JSON antigo

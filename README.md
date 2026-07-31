@@ -49,7 +49,7 @@ server {
 
     location / {
         # Tenta carregar o arquivo; se não achar, retorna 404
-        try_files $uri$uri/ =404;
+        try_files $uri $uri/ =404;
 
         # ---------------------------------------------------------
         # LIBERAÇÃO DE CORS (ESSENCIAL PARA O WIDGET FUNCIONAR)
