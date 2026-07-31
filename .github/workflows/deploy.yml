@@ -62,7 +62,7 @@ jobs:
               pip install --upgrade pip setuptools wheel
               
               # Executa seu script de conversão
-              python convert_flexible.py
+              python convert_requirements.py
               pip install -r requirements_flexible.txt -c constraints.txt
               
               echo "$NEW_REQ_HASH" > $OLD_REQ_HASH_FILE
