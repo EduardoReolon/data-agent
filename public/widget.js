@@ -84,9 +84,9 @@
                     <div class="relative w-full group">
                         
                         <!-- SETA ESQUERDA (Oculta no celular) -->
-                        <button class="absolute left-0 md:-left-6 top-1/2 -translate-y-1/2 bg-white/95 md:bg-white border border-gray-200 shadow-md rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none transition-transform hover:scale-105" 
+                        <button class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
                                 onclick="document.getElementById('slider-${uuid}').scrollBy({left: -350, behavior: 'smooth'})">
-                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                         </button>
 
                         <!-- TRILHA DO CARROSSEL -->
@@ -145,9 +145,9 @@
                         </div>
 
                         <!-- SETA DIREITA (Oculta no celular) -->
-                        <button class="absolute right-0 md:-right-6 top-1/2 -translate-y-1/2 bg-white/95 md:bg-white border border-gray-200 shadow-md rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none transition-transform hover:scale-105" 
+                        <button class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
                                 onclick="document.getElementById('slider-${uuid}').scrollBy({left: 350, behavior: 'smooth'})">
-                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </button>
 
                     </div>
