@@ -112,7 +112,6 @@ server {
         }
 
         # Grava os dados da URL apenas no log JSON
-        access_log off;
         access_log /var/log/nginx/leads_tracking.log tracking_json;
 
         return 204;
