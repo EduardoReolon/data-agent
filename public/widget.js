@@ -38,12 +38,59 @@
         return "Recentemente";
     }
 
+    function initWhatsAppTracking(uuid) {
+        const urlParams = new URLSearchParams(window.location.search);
+        let origem = "O";
+        
+        if (urlParams.has('gclid') || urlParams.has('wbraid') || urlParams.has('gbraid')) {
+            origem = "G";
+        } else if (urlParams.has('fbclid')) {
+            origem = "F";
+        } else if (urlParams.has('utm_source')) {
+            const utm = urlParams.get('utm_source').toLowerCase();
+            if (utm.includes('google')) origem = "G";
+            else if (utm.includes('facebook') || utm.includes('meta') || utm.includes('instagram')) origem = "F";
+        }
+
+        const clickId = urlParams.get('gclid') || urlParams.get('fbclid') || "organico";
+        const randomId = Math.random().toString(36).substring(2, 7).toUpperCase();
+        const idCurto = `${origem}-${randomId}`;
+        const protocolo = `*Protocolo de Atendimento: #${idCurto}*`;
+
+        // Busca links abrangendo api.whatsapp, wa.me e web.whatsapp que ainda não foram modificados
+        const linksWhatsapp = document.querySelectorAll('a[href*="api.whatsapp.com/send"]:not([data-tracked]), a[href*="wa.me/"]:not([data-tracked]), a[href*="web.whatsapp.com/send"]:not([data-tracked])');
+        
+        linksWhatsapp.forEach(link => {
+            try {
+                const url = new URL(link.href);
+                let textoOriginal = url.searchParams.get('text') || "";
+                
+                // Injeta o protocolo mantendo o número que já estava na URL (funciona para as 3 variações)
+                url.searchParams.set('text', `${textoOriginal}\n\n${protocolo}`);
+                link.href = url.toString();
+                link.setAttribute('data-tracked', 'true');
+
+                // Dispara o tracking fantasma no NGINX antes de abrir a janela
+                link.addEventListener('click', () => {
+                    const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}`;
+                    fetch(trackingUrl, { mode: 'no-cors' }).catch(() => {});
+                });
+            } catch (e) {
+                console.error("Data Agent: Erro ao processar link do WhatsApp", e);
+            }
+        });
+    }
+
     async function initReviewsWidget() {
         const containers = document.querySelectorAll('.data-agent-widget');
 
         for (const container of containers) {
             const uuid = container.getAttribute('data-uuid');
             const reviewsRaw = container.getAttribute('data-reviews') || "";
+            if (container.getAttribute('data-track-leads') === 'true') {
+                initWhatsAppTracking(uuid);
+            }
+
             const reviewIds = reviewsRaw.split(',').map(id => id.trim()).filter(id => id);
             
             if (!uuid || reviewIds.length === 0) continue;
