@@ -1,0 +1,15 @@
+# Ambientes virtuais
+venv/
+.venv/
+env/
+
+# Arquivos de configuração sensíveis
+.env
+
+# Cache do Python e artefatos de deploy
+__pycache__/
+*.pyc
+.requirements_hash
+
+# Ignora os DADOS gerados, mas mantém a pasta public e o widget.js
+public/clientes/

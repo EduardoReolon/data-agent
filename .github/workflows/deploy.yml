@@ -1,0 +1,77 @@
+name: Deploy Data Agent
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SERVER_TARGET_PATH: /home/ubuntu/data-agent
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Clean unnecessary files before deployment
+        run: |
+          rm -rf .git/
+          echo "Limpeza pré-deploy concluída."
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: "."
+          target: ${{ env.SERVER_TARGET_PATH }}
+          rm: false
+
+      - name: Run remote commands
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            TARGET_PATH=${{ env.SERVER_TARGET_PATH }}
+            cd $TARGET_PATH
+
+            # Setup das pastas
+            mkdir -p logs
+            mkdir -p public/clientes
+            
+            # Gera o .env no servidor
+            echo -e "${{ secrets.PRODUCTION_ENV_FILE }}" > .env
+
+            # Cria/Ativa o Venv
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            source venv/bin/activate
+
+            # Cache do requirements
+            NEW_REQ_HASH=$(sha256sum requirements.txt | awk '{ print $1 }')
+            OLD_REQ_HASH_FILE=".requirements_hash"
+
+            if [ "$NEW_REQ_HASH" != "$(cat $OLD_REQ_HASH_FILE 2>/dev/null)" ]; then
+              echo "Instalando dependências..."
+              pip install --upgrade pip setuptools wheel
+              
+              # Executa seu script de conversão
+              python convert_flexible.py
+              pip install -r requirements_flexible.txt -c constraints.txt
+              
+              echo "$NEW_REQ_HASH" > $OLD_REQ_HASH_FILE
+            fi
+
+            chmod +x script.py
+
+            echo "Rodando o Data Agent para processar clientes novos..."
+            # Executa o script usando o ambiente virtual ativado
+            python script.py
+
+            echo "Deploy concluído com sucesso!"
