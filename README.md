@@ -16,7 +16,7 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
     <div class="max-w-7xl mx-auto px-4">
         
         <!-- O WIDGET GERA O CABEÇALHO E OS CARDS AQUI -->
-        <div class="data-agent-widget flex flex-col justify-center min-h-[800px] md:min-h-[350px]"
+        <div class="data-agent-widget flex flex-col justify-center min-h-[420px]"
              data-uuid="6b29fc40" 
              data-reviews="8f4a2b1c, d9a14bc2, a8f3c9e1">
         </div>
