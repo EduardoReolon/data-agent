@@ -1,12 +1,12 @@
-(function() {
+(function () {
     const currentScript = document.currentScript;
     if (!currentScript) {
         console.error("Data Agent: Script origin not found.");
         return;
     }
-    
+
     const scriptUrl = new URL(currentScript.src);
-    const API_BASE_URL = scriptUrl.origin; 
+    const API_BASE_URL = scriptUrl.origin;
 
     function generateStars(rating) {
         let starsHtml = '';
@@ -19,8 +19,8 @@
     function timeAgo(dateString) {
         if (!dateString) return "Recentemente";
         const past = new Date(dateString);
-        if (isNaN(past.getTime())) return dateString; 
-        
+        if (isNaN(past.getTime())) return dateString;
+
         const now = new Date();
         const diffMs = now - past;
         const seconds = Math.round(diffMs / 1000);
@@ -41,7 +41,7 @@
     function initWhatsAppTracking(uuid) {
         const urlParams = new URLSearchParams(window.location.search);
         let origem = "O";
-        
+
         if (urlParams.has('gclid') || urlParams.has('wbraid') || urlParams.has('gbraid')) {
             origem = "G";
         } else if (urlParams.has('fbclid')) {
@@ -59,12 +59,12 @@
 
         // Busca links abrangendo api.whatsapp, wa.me e web.whatsapp que ainda não foram modificados
         const linksWhatsapp = document.querySelectorAll('a[href*="api.whatsapp.com/send"]:not([data-tracked]), a[href*="wa.me/"]:not([data-tracked]), a[href*="web.whatsapp.com/send"]:not([data-tracked])');
-        
+
         linksWhatsapp.forEach(link => {
             try {
                 const url = new URL(link.href);
                 let textoOriginal = url.searchParams.get('text') || "";
-                
+
                 // Injeta o protocolo mantendo o número que já estava na URL (funciona para as 3 variações)
                 url.searchParams.set('text', `${textoOriginal}\n\n${protocolo}`);
                 link.href = url.toString();
@@ -73,7 +73,7 @@
                 // Dispara o tracking fantasma no NGINX antes de abrir a janela
                 link.addEventListener('click', () => {
                     const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}`;
-                    fetch(trackingUrl, { mode: 'no-cors' }).catch(() => {});
+                    fetch(trackingUrl, { mode: 'no-cors' }).catch(() => { });
                 });
             } catch (e) {
                 console.error("Data Agent: Erro ao processar link do WhatsApp", e);
@@ -92,16 +92,16 @@
             }
 
             const reviewIds = reviewsRaw.split(',').map(id => id.trim()).filter(id => id);
-            
+
             if (!uuid || reviewIds.length === 0) continue;
 
             container.innerHTML = '<p style="text-align:center; color:#6b7280;">Carregando avaliações...</p>';
 
             try {
                 const baseUrl = `${API_BASE_URL}/clientes/${uuid}/google_reviews`;
-                
+
                 const headerPromise = fetch(`${baseUrl}/header.json`).then(r => r.json());
-                const reviewPromises = reviewIds.map(id => 
+                const reviewPromises = reviewIds.map(id =>
                     fetch(`${baseUrl}/avaliacoes/${id}.json`).then(r => r.ok ? r.json() : null)
                 );
 
@@ -109,7 +109,7 @@
                 const validReviews = reviewsData.filter(r => r !== null);
 
                 const mediaFormatada = String(placeInfo.rating || '5,0').replace('.', ',');
-                
+
                 // INÍCIO DO HTML INJETADO
                 let htmlContent = `
                     <style>
@@ -152,7 +152,7 @@
 
                     // ID único para o texto truncado
                     const textId = `txt-${uuid}-${index}`;
-                    
+
                     // Condição para mostrar o botão "Ler mais" só se o texto for grandinho (> 150 caracteres)
                     const showLerMais = review.text.length > 150;
 
@@ -198,8 +198,15 @@
                         </button>
 
                     </div>
+
+                    <div class="mt-8 flex justify-center w-full">
+                            <a href="${placeInfo.google_maps_url || '#'}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm">
+                                <img src="https://cdn.trustindex.io/assets/platform/Google/icon.svg" alt="Google" class="w-5 h-5 mr-3">
+                                Ler todas as ${placeInfo.reviews || ''} avaliações no Google
+                            </a>
+                        </div>
                 `;
-                
+
                 container.innerHTML = htmlContent;
 
             } catch (error) {

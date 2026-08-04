@@ -102,6 +102,7 @@ def processar_google_reviews(cliente):
         
         # Salva o Header (Média e Total da Empresa)
         place_info = dados_serpapi.get('place_info', {})
+        place_info['google_maps_url'] = f"https://www.google.com/maps/search/?api=1&query=Google&query_place_id={place_id}"
         with open(caminho_header, 'w', encoding='utf-8') as f:
             json.dump(place_info, f, ensure_ascii=False)
 
