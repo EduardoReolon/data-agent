@@ -32,8 +32,7 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
 </section>
 
 <!-- Importe o Script no final do body -->
-<!-- Substitua 'sua-api.com' pelo seu domínio real -->
-<script src="https://sua-api.com/widget.min.js" defer></script>
+<script src="https://data.ekron.ia.br/widget.min.js" defer></script>
 
 <!-- 
 NOTAS DE IMPLEMENTAÇÃO E PERFORMANCE:
