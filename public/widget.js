@@ -41,7 +41,6 @@
     function initWhatsAppTracking(uuid, numeroWhatsApp) {
         const urlParams = new URLSearchParams(window.location.search);
         let origem = "O";
-
         if (urlParams.has('gclid') || urlParams.has('wbraid') || urlParams.has('gbraid')) origem = "G";
         else if (urlParams.has('fbclid')) origem = "F";
         else if (urlParams.has('utm_source')) {
@@ -49,7 +48,6 @@
             if (utm.includes('google')) origem = "G";
             else if (utm.includes('facebook') || utm.includes('meta') || utm.includes('instagram')) origem = "F";
         }
-
         const clickId = urlParams.get('gclid') || urlParams.get('fbclid') || "organico";
         const randomId = Math.random().toString(36).substring(2, 7).toUpperCase();
         const idCurto = `${origem}-${randomId}`;
@@ -83,6 +81,76 @@
                 console.error("Data Agent: Erro ao processar link do WhatsApp", e);
             }
         });
+    }
+
+    function initPerformanceManager(container) {
+        const head = document.head || document.getElementsByTagName('head')[0];
+
+        // 1. CARREGAMENTO IMEDIATO (Para não quebrar visual do Widget)
+        if (container.getAttribute('data-load-fa') === 'true') {
+            const fa = document.createElement('link');
+            fa.rel = 'stylesheet';
+            fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            head.appendChild(fa);
+        }
+
+        // 2. CARREGAMENTO PREGUIÇOSO (Para PageSpeed 90+)
+        let trackersLoaded = false;
+        function loadTrackers() {
+            if (trackersLoaded) return;
+            trackersLoaded = true;
+
+            // Animações AOS
+            if (container.getAttribute('data-lazy-aos') === 'true') {
+                const aosCSS = document.createElement('link');
+                aosCSS.rel = 'stylesheet';
+                aosCSS.href = 'https://unpkg.com/aos@2.3.1/dist/aos.css';
+                head.appendChild(aosCSS);
+                const aosScript = document.createElement('script');
+                aosScript.src = "https://unpkg.com/aos@2.3.1/dist/aos.js";
+                aosScript.onload = () => AOS.init({ duration: 800, once: true, offset: 50 });
+                document.body.appendChild(aosScript);
+            }
+
+            // GTM (Aceita múltiplos IDs separados por vírgula)
+            const gtmIds = container.getAttribute('data-gtm-ids');
+            if (gtmIds) {
+                gtmIds.split(',').forEach(id => {
+                    const cleanId = id.trim();
+                    if (!cleanId) return;
+                    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                    })(window,document,'script','dataLayer',cleanId);
+                });
+            }
+
+            // Facebook Pixel
+            const fbPixel = container.getAttribute('data-fb-pixel');
+            if (fbPixel) {
+                !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+                n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+                t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+                document,'script','https://connect.facebook.net/en_US/fbevents.js');
+                fbq('init', fbPixel);
+            }
+
+            // Microsoft Clarity
+            const clarityId = container.getAttribute('data-clarity-id');
+            if (clarityId) {
+                (function(c, l, a, r, i, t, y) {
+                    c[a] = c[a] || function() { (c[a].q = c[a].q || []).push(arguments) };
+                    t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+                    y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+                })(window, document, "clarity", "script", clarityId);
+            }
+        }
+
+        // Dispara trackers no primeiro toque/scroll ou força após 3.5s
+        ['scroll', 'mousemove', 'touchstart', 'click'].forEach(e => window.addEventListener(e, loadTrackers, {once: true, passive: true}));
+        setTimeout(loadTrackers, 3500);
     }
 
     async function initReviewsWidget() {
