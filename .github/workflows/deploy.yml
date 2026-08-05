@@ -18,6 +18,17 @@ jobs:
           rm -rf .git/
           echo "Limpeza pré-deploy concluída."
 
+      - name: Minify widget.js if it exists
+        run: |
+          if [ -f "public/widget.js" ]; then
+            echo "Arquivo public/widget.js encontrado. Iniciando minificação..."
+            # Usa o Terser para comprimir (compress) e encurtar variáveis (mangle)
+            npx terser public/widget.js -o public/widget.min.js --compress --mangle
+            echo "Minificação concluída: public/widget.min.js"
+          else
+            echo "public/widget.js não encontrado. Pulando etapa."
+          fi
+
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:

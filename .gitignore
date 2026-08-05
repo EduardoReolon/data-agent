@@ -13,3 +13,5 @@ __pycache__/
 
 # Ignora os DADOS gerados, mas mantém a pasta public e o widget.js
 public/clientes/
+
+*.min.js

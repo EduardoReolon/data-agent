@@ -33,7 +33,7 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
 
 <!-- Importe o Script no final do body -->
 <!-- Substitua 'sua-api.com' pelo seu domínio real -->
-<script src="https://sua-api.com/widget.js" defer></script>
+<script src="https://sua-api.com/widget.min.js" defer></script>
 
 <!-- 
 NOTAS DE IMPLEMENTAÇÃO E PERFORMANCE:
