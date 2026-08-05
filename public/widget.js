@@ -38,15 +38,13 @@
         return "Recentemente";
     }
 
-    function initWhatsAppTracking(uuid) {
+    function initWhatsAppTracking(uuid, numeroWhatsApp) {
         const urlParams = new URLSearchParams(window.location.search);
         let origem = "O";
 
-        if (urlParams.has('gclid') || urlParams.has('wbraid') || urlParams.has('gbraid')) {
-            origem = "G";
-        } else if (urlParams.has('fbclid')) {
-            origem = "F";
-        } else if (urlParams.has('utm_source')) {
+        if (urlParams.has('gclid') || urlParams.has('wbraid') || urlParams.has('gbraid')) origem = "G";
+        else if (urlParams.has('fbclid')) origem = "F";
+        else if (urlParams.has('utm_source')) {
             const utm = urlParams.get('utm_source').toLowerCase();
             if (utm.includes('google')) origem = "G";
             else if (utm.includes('facebook') || utm.includes('meta') || utm.includes('instagram')) origem = "F";
@@ -57,20 +55,26 @@
         const idCurto = `${origem}-${randomId}`;
         const protocolo = `*Protocolo de Atendimento: #${idCurto}*`;
 
-        // Busca links abrangendo api.whatsapp, wa.me e web.whatsapp que ainda não foram modificados
         const linksWhatsapp = document.querySelectorAll('a[href*="api.whatsapp.com/send"]:not([data-tracked]), a[href*="wa.me/"]:not([data-tracked]), a[href*="web.whatsapp.com/send"]:not([data-tracked])');
 
         linksWhatsapp.forEach(link => {
             try {
                 const url = new URL(link.href);
                 let textoOriginal = url.searchParams.get('text') || "";
+                let novoTexto = `${textoOriginal}\n\n${protocolo}`.trim();
 
-                // Injeta o protocolo mantendo o número que já estava na URL (funciona para as 3 variações)
-                url.searchParams.set('text', `${textoOriginal}\n\n${protocolo}`);
-                link.href = url.toString();
+                // Lógica de substituição do número (se existir)
+                if (numeroWhatsApp && numeroWhatsApp.trim() !== "") {
+                    // Padronizamos para a API oficial de envio para evitar conflitos de path com o wa.me
+                    link.href = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(novoTexto)}`;
+                } else {
+                    // Se não tiver número para substituir, apenas injeta o texto novo na URL existente
+                    url.searchParams.set('text', novoTexto);
+                    link.href = url.toString();
+                }
+
                 link.setAttribute('data-tracked', 'true');
 
-                // Dispara o tracking fantasma no NGINX antes de abrir a janela
                 link.addEventListener('click', () => {
                     const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}`;
                     fetch(trackingUrl, { mode: 'no-cors' }).catch(() => { });
@@ -85,10 +89,14 @@
         const containers = document.querySelectorAll('.data-agent-widget');
 
         for (const container of containers) {
+            initPerformanceManager(container);
+
             const uuid = container.getAttribute('data-uuid');
             const reviewsRaw = container.getAttribute('data-reviews') || "";
+            const numeroWhats = container.getAttribute('data-whatsapp-number'); // Captura o número
+            
             if (container.getAttribute('data-track-leads') === 'true') {
-                initWhatsAppTracking(uuid);
+                initWhatsAppTracking(uuid, numeroWhats); // Passa para a função
             }
 
             const reviewIds = reviewsRaw.split(',').map(id => id.trim()).filter(id => id);

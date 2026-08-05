@@ -15,12 +15,17 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
 <section class="py-12 bg-white border-y border-gray-100">
     <div class="max-w-7xl mx-auto px-4">
         
-        <!-- O WIDGET GERA O CABEÇALHO E OS CARDS AQUI -->
-        <!-- Adicione data-track-leads="true" se quiser ativar o rastreamento via WhatsApp e NGINX -->
+        <!-- WIDGET DE AVALIAÇÕES E GERENCIAMENTO DE PERFORMANCE -->
         <div class="data-agent-widget flex flex-col justify-center min-h-[420px]"
              data-uuid="6b29fc40" 
              data-reviews="8f4a2b1c, d9a14bc2, a8f3c9e1"
-             data-track-leads="true">
+             data-track-leads="true"
+             data-whatsapp-number="5511999999999"
+             data-load-fa="true"
+             data-lazy-aos="true"
+             data-gtm-ids="GTM-XXXXXXXX, GTM-YYYYYYYY"
+             data-fb-pixel="SEU_PIXEL_AQUI"
+             data-clarity-id="SEU_CLARITY_AQUI">
         </div>
 
     </div>
@@ -31,11 +36,22 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
 <script src="https://sua-api.com/widget.js" defer></script>
 
 <!-- 
-NOTA DE IMPLEMENTAÇÃO - RASTREAMENTO DO WHATSAPP:
-Ao habilitar `data-track-leads="true"`, não é necessário adicionar nenhuma classe CSS extra. 
-O script busca automaticamente qualquer tag <a> cujo atributo `href` comece com "https://api.whatsapp.com/send" ou outra variação do WhatsApp. 
-Ele irá ler o número configurado no HTML do cliente e injetar silenciosamente o "Protocolo de Atendimento" 
-na mensagem, disparando a métrica para o NGINX no momento do clique.
+NOTAS DE IMPLEMENTAÇÃO E PERFORMANCE:
+
+1. RASTREAMENTO E SUBSTITUIÇÃO DO WHATSAPP:
+   - Ao habilitar `data-track-leads="true"`, o script busca automaticamente qualquer tag <a> cujo atributo `href` contenha "api.whatsapp.com/send", "wa.me" ou "web.whatsapp.com/send".
+   - Se `data-whatsapp-number` estiver preenchido, os números de destino originais serão substituídos pelo número configurado.
+   - O script injeta silenciosamente o "Protocolo de Atendimento" na mensagem e dispara a métrica de clique para o NGINX.
+
+2. GERENCIAMENTO DE PERFORMANCE (LAZY LOAD INTELIGENTE):
+   Para garantir nota máxima no PageSpeed (90+), o script gerencia o carregamento de scripts pesados em segundo plano, disparando-os apenas na primeira interação do usuário (scroll, clique, movimento do mouse) ou após 3.5 segundos:
+   - `data-load-fa="true"`: Carrega o Font Awesome imediatamente para evitar que as estrelas do widget pisquem ou fiquem invisíveis.
+   - `data-lazy-aos="true"`: Carrega e inicializa as animações AOS de forma otimizada.
+   - `data-gtm-ids`: Insere um ou mais IDs do Google Tag Manager (se houver mais de um, separe por vírgulas).
+   - `data-fb-pixel`: Insere e inicializa o Pixel do Facebook.
+   - `data-clarity-id`: Insere o rastreamento do Microsoft Clarity.
+   
+   *Dica:* Se um cliente específico não utilizar alguma destas ferramentas (ex: não usa Pixel), basta remover o atributo correspondente da tag `<div>`.
 -->
 ```
 
