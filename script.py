@@ -23,6 +23,11 @@ CLIENTES = [
         "uuid": "6b29fc40", 
         "nome": "Acupuntura Curitiba Diego Bertuol",
         "google_place_id": "ChIJVSUSrHbk3JQRAPA7pEOV5iE"
+    },
+    {
+        "uuid": "726dc3db", 
+        "nome": "Imobiliária Manduri",
+        "google_place_id": "ChIJuwg85P9S3JQRC6M6yR3yYys"
     }
 ]
 
