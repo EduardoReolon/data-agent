@@ -38,6 +38,82 @@
         return "Recentemente";
     }
 
+    // --- NOVO: Sistema de Consentimento de Cookies Discreto ---
+    function initCookieConsent() {
+        // Se o usuário já aceitou antes, não mostra nada
+        if (localStorage.getItem('da_cookie_consent')) return;
+
+        const banner = document.createElement('div');
+        banner.id = 'da-cookie-banner';
+        banner.innerHTML = `
+            <style>
+                #da-cookie-banner {
+                    position: fixed;
+                    bottom: 24px;
+                    left: 24px;
+                    max-width: 300px;
+                    background: #ffffff;
+                    border: 1px solid #e5e7eb;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    border-radius: 12px;
+                    padding: 16px;
+                    z-index: 2147483647;
+                    font-family: system-ui, -apple-system, sans-serif;
+                    transform: translateY(150%);
+                    opacity: 0;
+                    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                #da-cookie-banner.show {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+                #da-cookie-banner p {
+                    margin: 0 0 12px 0;
+                    font-size: 13px;
+                    color: #4b5563;
+                    line-height: 1.5;
+                }
+                #da-cookie-banner button {
+                    background: #2563eb;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 8px 16px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    width: 100%;
+                    transition: background 0.2s;
+                }
+                #da-cookie-banner button:hover {
+                    background: #1d4ed8;
+                }
+                /* Ajuste para celular */
+                @media (max-width: 640px) {
+                    #da-cookie-banner {
+                        bottom: 16px; left: 16px; right: 16px; max-width: none;
+                    }
+                }
+            </style>
+            <p>Usamos cookies para melhorar sua experiência e analisar nosso tráfego. Ao continuar, você concorda com nossa política.</p>
+            <button id="da-cookie-accept">Ok, entendi</button>
+        `;
+
+        document.body.appendChild(banner);
+
+        // Atraso de 2 segundos para não assustar o usuário assim que a página carrega
+        setTimeout(() => banner.classList.add('show'), 2000);
+
+        document.getElementById('da-cookie-accept').addEventListener('click', () => {
+            localStorage.setItem('da_cookie_consent', 'true');
+            banner.classList.remove('show');
+            setTimeout(() => banner.remove(), 500);
+            
+            // Dispara um evento avisando o restante do script que pode carregar os trackers
+            window.dispatchEvent(new Event('da_consent_given'));
+        });
+    }
+
     function initWhatsAppTracking(uuid, numeroWhatsApp) {
         const urlParams = new URLSearchParams(window.location.search);
         let origem = "O";
@@ -61,12 +137,9 @@
                 let textoOriginal = url.searchParams.get('text') || "";
                 let novoTexto = `${textoOriginal}\n\n${protocolo}`.trim();
 
-                // Lógica de substituição do número (se existir)
                 if (numeroWhatsApp && numeroWhatsApp.trim() !== "") {
-                    // Padronizamos para a API oficial de envio para evitar conflitos de path com o wa.me
                     link.href = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(novoTexto)}`;
                 } else {
-                    // Se não tiver número para substituir, apenas injeta o texto novo na URL existente
                     url.searchParams.set('text', novoTexto);
                     link.href = url.toString();
                 }
@@ -86,7 +159,7 @@
     function initPerformanceManager(container) {
         const head = document.head || document.getElementsByTagName('head')[0];
 
-        // 1. CARREGAMENTO IMEDIATO (Para não quebrar visual do Widget)
+        // 1. CARREGAMENTO IMEDIATO (Visual)
         if (container.getAttribute('data-load-fa') === 'true') {
             const fa = document.createElement('link');
             fa.rel = 'stylesheet';
@@ -94,13 +167,14 @@
             head.appendChild(fa);
         }
 
-        // 2. CARREGAMENTO PREGUIÇOSO (Para PageSpeed 90+)
+        let uiLoaded = false;
         let trackersLoaded = false;
-        function loadTrackers() {
-            if (trackersLoaded) return;
-            trackersLoaded = true;
 
-            // Animações AOS
+        // 2. CARREGAMENTO PREGUIÇOSO DA UI (Não depende de cookies)
+        function loadLazyUI() {
+            if (uiLoaded) return;
+            uiLoaded = true;
+
             if (container.getAttribute('data-lazy-aos') === 'true') {
                 const aosCSS = document.createElement('link');
                 aosCSS.rel = 'stylesheet';
@@ -111,8 +185,16 @@
                 aosScript.onload = () => AOS.init({ duration: 800, once: true, offset: 50 });
                 document.body.appendChild(aosScript);
             }
+        }
 
-            // GTM (Aceita múltiplos IDs separados por vírgula)
+        // 3. CARREGAMENTO DE TRACKERS (GTM, FB, Clarity - Depende de Aceitar Cookies)
+        function loadTrackers() {
+            // Se o usuário não aceitou os cookies ainda, bloqueia o rastreio.
+            if (!localStorage.getItem('da_cookie_consent')) return;
+            
+            if (trackersLoaded) return;
+            trackersLoaded = true;
+
             const gtmIds = container.getAttribute('data-gtm-ids');
             if (gtmIds) {
                 gtmIds.split(',').forEach(id => {
@@ -126,7 +208,6 @@
                 });
             }
 
-            // Facebook Pixel
             const fbPixel = container.getAttribute('data-fb-pixel');
             if (fbPixel) {
                 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -137,7 +218,6 @@
                 fbq('init', fbPixel);
             }
 
-            // Microsoft Clarity
             const clarityId = container.getAttribute('data-clarity-id');
             if (clarityId) {
                 (function(c, l, a, r, i, t, y) {
@@ -148,23 +228,36 @@
             }
         }
 
-        // Dispara trackers no primeiro toque/scroll ou força após 3.5s
-        ['scroll', 'mousemove', 'touchstart', 'click'].forEach(e => window.addEventListener(e, loadTrackers, {once: true, passive: true}));
-        setTimeout(loadTrackers, 3500);
+        const triggerLazyLoad = () => {
+            loadLazyUI();
+            loadTrackers();
+        };
+
+        // Dispara no scroll/toque ou após 3.5s
+        ['scroll', 'mousemove', 'touchstart', 'click'].forEach(e => window.addEventListener(e, triggerLazyLoad, {once: true, passive: true}));
+        setTimeout(triggerLazyLoad, 3500);
+
+        // Se o usuário clicar em "Aceitar" no banner, carrega os trackers imediatamente
+        window.addEventListener('da_consent_given', loadTrackers);
     }
 
     async function initReviewsWidget() {
         const containers = document.querySelectorAll('.data-agent-widget');
+        
+        // Inicia a verificação do banner de cookies na página
+        if (containers.length > 0) {
+            initCookieConsent();
+        }
 
         for (const container of containers) {
             initPerformanceManager(container);
 
             const uuid = container.getAttribute('data-uuid');
             const reviewsRaw = container.getAttribute('data-reviews') || "";
-            const numeroWhats = container.getAttribute('data-whatsapp-number'); // Captura o número
+            const numeroWhats = container.getAttribute('data-whatsapp-number');
             
             if (container.getAttribute('data-track-leads') === 'true') {
-                initWhatsAppTracking(uuid, numeroWhats); // Passa para a função
+                initWhatsAppTracking(uuid, numeroWhats);
             }
 
             const reviewIds = reviewsRaw.split(',').map(id => id.trim()).filter(id => id);
@@ -186,10 +279,8 @@
 
                 const mediaFormatada = String(placeInfo.rating || '5,0').replace('.', ',');
 
-                // INÍCIO DO HTML INJETADO
                 let htmlContent = `
                     <style>
-                        /* Esconde a scrollbar nativa mas mantém o toque/arrasto funcionando */
                         .data-agent-no-scrollbar::-webkit-scrollbar { display: none; }
                         .data-agent-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
                     </style>
@@ -203,16 +294,13 @@
                         <img src="https://cdn.trustindex.io/assets/platform/Google/logo.svg" alt="Google" class="h-6 mt-2">
                     </div>
 
-                    <!-- CONTAINER DO CARROSSEL -->
                     <div class="relative w-full group">
                         
-                        <!-- SETA ESQUERDA (Oculta no celular) -->
                         <button class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
                                 onclick="document.getElementById('slider-${uuid}').scrollBy({left: -350, behavior: 'smooth'})">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                         </button>
 
-                        <!-- TRILHA DO CARROSSEL -->
                         <div id="slider-${uuid}" class="flex overflow-x-auto snap-x snap-mandatory gap-6 data-agent-no-scrollbar pb-4 px-2">
                 `;
 
@@ -226,15 +314,10 @@
                         avatarHtml = `<div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4 text-lg">${initial}</div>`;
                     }
 
-                    // ID único para o texto truncado
                     const textId = `txt-${uuid}-${index}`;
-
-                    // Condição para mostrar o botão "Ler mais" só se o texto for grandinho (> 150 caracteres)
                     const showLerMais = review.text.length > 150;
 
                     htmlContent += `
-                        <!-- CARTÃO INDIVIDUAL -->
-                        <!-- snap-center garante que pare no lugar certo. w-full no cel, 33% no desktop -->
                         <div class="bg-gray-50 border border-gray-100 rounded-xl p-6 shadow-sm flex-none w-full snap-center md:w-[calc(33.333%-1rem)] flex flex-col transition-all hover:shadow-md">
                             <div class="flex items-center mb-4">
                                 ${avatarHtml}
@@ -247,7 +330,6 @@
                                 ${generateStars(review.rating)}
                             </div>
                             
-                            <!-- CORPO DO TEXTO COM LINE CLAMP -->
                             <div class="flex-grow">
                                 <p id="${textId}" class="text-gray-600 text-sm md:text-base leading-relaxed line-clamp-5 transition-all duration-300">${review.text}</p>
                                 ${showLerMais ? `
@@ -267,7 +349,6 @@
                 htmlContent += `
                         </div>
 
-                        <!-- SETA DIREITA (Oculta no celular) -->
                         <button class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
                                 onclick="document.getElementById('slider-${uuid}').scrollBy({left: 350, behavior: 'smooth'})">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
