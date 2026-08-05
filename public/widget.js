@@ -8,6 +8,23 @@
     const scriptUrl = new URL(currentScript.src);
     const API_BASE_URL = scriptUrl.origin;
 
+    // --- NOVO: Configuração Inicial do Google Consent Mode V2 ---
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    
+    // Verifica se já aceitou antes
+    const userHasConsent = localStorage.getItem('da_cookie_consent') === 'true';
+
+    // Define o estado padrão (Negado se não aceitou, Permitido se já aceitou antes)
+    gtag('consent', 'default', {
+        'ad_storage': userHasConsent ? 'granted' : 'denied',
+        'ad_user_data': userHasConsent ? 'granted' : 'denied',
+        'ad_personalization': userHasConsent ? 'granted' : 'denied',
+        'analytics_storage': userHasConsent ? 'granted' : 'denied',
+        'wait_for_update': 500
+    });
+    // -------------------------------------------------------------
+
     function generateStars(rating) {
         let starsHtml = '';
         for (let i = 0; i < rating; i++) {
@@ -38,10 +55,8 @@
         return "Recentemente";
     }
 
-    // --- NOVO: Sistema de Consentimento de Cookies Discreto ---
     function initCookieConsent() {
-        // Se o usuário já aceitou antes, não mostra nada
-        if (localStorage.getItem('da_cookie_consent')) return;
+        if (userHasConsent) return; // Não mostra se já aceitou
 
         const banner = document.createElement('div');
         banner.id = 'da-cookie-banner';
@@ -88,7 +103,6 @@
                 #da-cookie-banner button:hover {
                     background: #1d4ed8;
                 }
-                /* Ajuste para celular */
                 @media (max-width: 640px) {
                     #da-cookie-banner {
                         bottom: 16px; left: 16px; right: 16px; max-width: none;
@@ -100,8 +114,6 @@
         `;
 
         document.body.appendChild(banner);
-
-        // Atraso de 2 segundos para não assustar o usuário assim que a página carrega
         setTimeout(() => banner.classList.add('show'), 2000);
 
         document.getElementById('da-cookie-accept').addEventListener('click', () => {
@@ -109,7 +121,15 @@
             banner.classList.remove('show');
             setTimeout(() => banner.remove(), 500);
             
-            // Dispara um evento avisando o restante do script que pode carregar os trackers
+            // Atualiza o Google Ads para coletar os dados completos de quem aceitou
+            gtag('consent', 'update', {
+                'ad_storage': 'granted',
+                'ad_user_data': 'granted',
+                'ad_personalization': 'granted',
+                'analytics_storage': 'granted'
+            });
+
+            // Dispara evento para liberar o Facebook Pixel e Clarity
             window.dispatchEvent(new Event('da_consent_given'));
         });
     }
@@ -159,7 +179,6 @@
     function initPerformanceManager(container) {
         const head = document.head || document.getElementsByTagName('head')[0];
 
-        // 1. CARREGAMENTO IMEDIATO (Visual)
         if (container.getAttribute('data-load-fa') === 'true') {
             const fa = document.createElement('link');
             fa.rel = 'stylesheet';
@@ -168,13 +187,12 @@
         }
 
         let uiLoaded = false;
-        let trackersLoaded = false;
+        let gtmLoaded = false;
+        let strictTrackersLoaded = false;
 
-        // 2. CARREGAMENTO PREGUIÇOSO DA UI (Não depende de cookies)
         function loadLazyUI() {
             if (uiLoaded) return;
             uiLoaded = true;
-
             if (container.getAttribute('data-lazy-aos') === 'true') {
                 const aosCSS = document.createElement('link');
                 aosCSS.rel = 'stylesheet';
@@ -187,13 +205,10 @@
             }
         }
 
-        // 3. CARREGAMENTO DE TRACKERS (GTM, FB, Clarity - Depende de Aceitar Cookies)
-        function loadTrackers() {
-            // Se o usuário não aceitou os cookies ainda, bloqueia o rastreio.
-            if (!localStorage.getItem('da_cookie_consent')) return;
-            
-            if (trackersLoaded) return;
-            trackersLoaded = true;
+        // Carrega o Google Tag Manager. Ele internamente respeitará o "Consent Mode"
+        function loadGTM() {
+            if (gtmLoaded) return;
+            gtmLoaded = true;
 
             const gtmIds = container.getAttribute('data-gtm-ids');
             if (gtmIds) {
@@ -207,6 +222,13 @@
                     })(window,document,'script','dataLayer',cleanId);
                 });
             }
+        }
+
+        // Carrega Facebook Pixel e Clarity SOMENTE se o usuário aceitou os cookies
+        function loadStrictTrackers() {
+            if (!localStorage.getItem('da_cookie_consent')) return;
+            if (strictTrackersLoaded) return;
+            strictTrackersLoaded = true;
 
             const fbPixel = container.getAttribute('data-fb-pixel');
             if (fbPixel) {
@@ -230,21 +252,21 @@
 
         const triggerLazyLoad = () => {
             loadLazyUI();
-            loadTrackers();
+            loadGTM(); // GTM roda bloqueado/anônimo pela LGPD
+            loadStrictTrackers(); // FB/Clarity só rodam se tiver consentimento
         };
 
-        // Dispara no scroll/toque ou após 3.5s
+        // Dispara trackers para manter PageSpeed alto
         ['scroll', 'mousemove', 'touchstart', 'click'].forEach(e => window.addEventListener(e, triggerLazyLoad, {once: true, passive: true}));
         setTimeout(triggerLazyLoad, 3500);
 
-        // Se o usuário clicar em "Aceitar" no banner, carrega os trackers imediatamente
-        window.addEventListener('da_consent_given', loadTrackers);
+        // Se o usuário clicar em "Aceitar", injeta os trackers estritos imediatamente
+        window.addEventListener('da_consent_given', loadStrictTrackers);
     }
 
     async function initReviewsWidget() {
         const containers = document.querySelectorAll('.data-agent-widget');
         
-        // Inicia a verificação do banner de cookies na página
         if (containers.length > 0) {
             initCookieConsent();
         }
@@ -295,7 +317,6 @@
                     </div>
 
                     <div class="relative w-full group">
-                        
                         <button class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
                                 onclick="document.getElementById('slider-${uuid}').scrollBy({left: -350, behavior: 'smooth'})">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
