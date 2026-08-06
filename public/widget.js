@@ -15,7 +15,6 @@
     // Verifica se já aceitou antes
     const userHasConsent = localStorage.getItem('da_cookie_consent') === 'true';
 
-    // Define o estado padrão (Negado se não aceitou, Permitido se já aceitou antes)
     gtag('consent', 'default', {
         'ad_storage': userHasConsent ? 'granted' : 'denied',
         'ad_user_data': userHasConsent ? 'granted' : 'denied',
@@ -23,7 +22,6 @@
         'analytics_storage': userHasConsent ? 'granted' : 'denied',
         'wait_for_update': 500
     });
-    // -------------------------------------------------------------
 
     function generateStars(rating) {
         let starsHtml = '';
