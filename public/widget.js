@@ -330,7 +330,7 @@
                     let avatarHtml = '';
                     if (review.profile_photo_url) {
                         const fotoUrl = `${baseUrl}/avaliacoes/${review.profile_photo_url}`;
-                        avatarHtml = `<img src="${fotoUrl}" class="w-12 h-12 rounded-full mr-4 object-cover border border-gray-100">`;
+                        avatarHtml = `<img src="${fotoUrl}" alt="Foto de perfil" class="w-12 h-12 rounded-full mr-4 object-cover border border-gray-100">`;
                     } else {
                         avatarHtml = `<div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4 text-lg">${initial}</div>`;
                     }
