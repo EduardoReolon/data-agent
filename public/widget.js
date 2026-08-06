@@ -181,6 +181,11 @@
             const fa = document.createElement('link');
             fa.rel = 'stylesheet';
             fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            
+            // TRUQUE DE PERFORMANCE: Carrega de forma assíncrona (não bloqueia a tela)
+            fa.media = 'print';
+            fa.onload = function() { this.media = 'all'; };
+            
             head.appendChild(fa);
         }
 
