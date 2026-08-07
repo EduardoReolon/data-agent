@@ -1,5 +1,6 @@
 (function () {
-    const currentScript = document.currentScript;
+    // 1. PEGA AS CONFIGURAÇÕES DIRETAMENTE DA TAG <SCRIPT> (que estará no base.html)
+    const currentScript = document.currentScript || document.getElementById('data-agent-script');
     if (!currentScript) {
         console.error("Data Agent: Script origin not found.");
         return;
@@ -8,11 +9,21 @@
     const scriptUrl = new URL(currentScript.src);
     const API_BASE_URL = scriptUrl.origin;
 
-    // --- NOVO: Configuração Inicial do Google Consent Mode V2 ---
+    // Variáveis lidas do script
+    const uuid = currentScript.getAttribute('data-uuid');
+    const reviewsRaw = currentScript.getAttribute('data-reviews') || "";
+    const numeroWhats = currentScript.getAttribute('data-whatsapp-number');
+    const trackLeads = currentScript.getAttribute('data-track-leads') === 'true';
+    const gtmIds = currentScript.getAttribute('data-gtm-ids');
+    const fbPixel = currentScript.getAttribute('data-fb-pixel');
+    const clarityId = currentScript.getAttribute('data-clarity-id');
+    const loadFa = currentScript.getAttribute('data-load-fa') === 'true';
+    const lazyAos = currentScript.getAttribute('data-lazy-aos') === 'true';
+
+    // --- CONFIGURAÇÃO INICIAL GOOGLE CONSENT MODE V2 ---
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     
-    // Verifica se já aceitou antes
     const userHasConsent = localStorage.getItem('da_cookie_consent') === 'true';
 
     gtag('consent', 'default', {
@@ -23,6 +34,7 @@
         'wait_for_update': 500
     });
 
+    // Funções utilitárias
     function generateStars(rating) {
         let starsHtml = '';
         for (let i = 0; i < rating; i++) {
@@ -53,8 +65,9 @@
         return "Recentemente";
     }
 
+    // --- NOVO: BANNER DE COOKIES PARA LANDING PAGE ---
     function initCookieConsent() {
-        if (userHasConsent) return; // Não mostra se já aceitou
+        if (localStorage.getItem('da_cookie_consent') !== null) return; 
 
         const banner = document.createElement('div');
         banner.id = 'da-cookie-banner';
@@ -63,75 +76,90 @@
                 #da-cookie-banner {
                     position: fixed;
                     bottom: 24px;
-                    left: 24px;
-                    max-width: 300px;
+                    left: 50%;
+                    transform: translate(-50%, 150%);
+                    width: calc(100% - 48px);
+                    max-width: 750px;
                     background: #ffffff;
                     border: 1px solid #e5e7eb;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                    border-radius: 12px;
-                    padding: 16px;
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+                    border-radius: 16px;
+                    padding: 20px;
                     z-index: 2147483647;
                     font-family: system-ui, -apple-system, sans-serif;
-                    transform: translateY(150%);
                     opacity: 0;
-                    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
                 }
                 #da-cookie-banner.show {
-                    transform: translateY(0);
+                    transform: translate(-50%, 0);
                     opacity: 1;
                 }
-                #da-cookie-banner p {
-                    margin: 0 0 12px 0;
-                    font-size: 13px;
-                    color: #4b5563;
-                    line-height: 1.5;
+                .da-cookie-content { flex: 1; }
+                .da-cookie-content h4 {
+                    margin: 0 0 6px 0; font-size: 16px; font-weight: 700; color: #111827;
                 }
-                #da-cookie-banner button {
-                    background: #2563eb;
-                    color: #ffffff;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 8px 16px;
-                    font-size: 13px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    width: 100%;
-                    transition: background 0.2s;
+                .da-cookie-content p {
+                    margin: 0; font-size: 13.5px; color: #4b5563; line-height: 1.5;
                 }
-                #da-cookie-banner button:hover {
-                    background: #1d4ed8;
+                .da-cookie-buttons {
+                    display: flex; flex-direction: column; gap: 10px;
                 }
-                @media (max-width: 640px) {
-                    #da-cookie-banner {
-                        bottom: 16px; left: 16px; right: 16px; max-width: none;
-                    }
+                .da-btn-accept {
+                    background: #2563eb; color: #ffffff; border: none; border-radius: 8px;
+                    padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer;
+                    transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+                }
+                .da-btn-accept:hover { background: #1d4ed8; }
+                .da-btn-reject {
+                    background: transparent; color: #6b7280; border: 1px solid #d1d5db;
+                    border-radius: 8px; padding: 12px 20px; font-size: 14px; font-weight: 600;
+                    cursor: pointer; transition: all 0.2s;
+                }
+                .da-btn-reject:hover { background: #f3f4f6; color: #374151; }
+                @media (min-width: 640px) {
+                    #da-cookie-banner { flex-direction: row; align-items: center; padding: 24px; }
+                    .da-cookie-buttons { flex-direction: row; flex-shrink: 0; }
                 }
             </style>
-            <p>Usamos cookies para melhorar sua experiência e analisar nosso tráfego. Ao continuar, você concorda com nossa política.</p>
-            <button id="da-cookie-accept">Ok, entendi</button>
+            
+            <div class="da-cookie-content">
+                <h4>Sua privacidade</h4>
+                <p>Usamos cookies para melhorar sua experiência, analisar o tráfego da página e personalizar nossos anúncios. Você pode aceitar todos ou recusar os não essenciais.</p>
+            </div>
+            <div class="da-cookie-buttons">
+                <button class="da-btn-reject" id="da-cookie-reject">Recusar</button>
+                <button class="da-btn-accept" id="da-cookie-accept">Aceitar Todos</button>
+            </div>
         `;
 
         document.body.appendChild(banner);
-        setTimeout(() => banner.classList.add('show'), 2000);
+        setTimeout(() => banner.classList.add('show'), 1500);
+
+        function closeBanner() {
+            banner.classList.remove('show');
+            setTimeout(() => banner.remove(), 600);
+        }
 
         document.getElementById('da-cookie-accept').addEventListener('click', () => {
             localStorage.setItem('da_cookie_consent', 'true');
-            banner.classList.remove('show');
-            setTimeout(() => banner.remove(), 500);
-            
-            // Atualiza o Google Ads para coletar os dados completos de quem aceitou
+            closeBanner();
             gtag('consent', 'update', {
-                'ad_storage': 'granted',
-                'ad_user_data': 'granted',
-                'ad_personalization': 'granted',
-                'analytics_storage': 'granted'
+                'ad_storage': 'granted', 'ad_user_data': 'granted',
+                'ad_personalization': 'granted', 'analytics_storage': 'granted'
             });
-
-            // Dispara evento para liberar o Facebook Pixel e Clarity
             window.dispatchEvent(new Event('da_consent_given'));
+        });
+
+        document.getElementById('da-cookie-reject').addEventListener('click', () => {
+            localStorage.setItem('da_cookie_consent', 'false'); 
+            closeBanner();
         });
     }
 
+    // --- TRACKING WHATSAPP ---
     function initWhatsAppTracking(uuid, numeroWhatsApp) {
         const urlParams = new URLSearchParams(window.location.search);
         let origem = "O";
@@ -174,65 +202,50 @@
         });
     }
 
-    function initPerformanceManager(container) {
+    // --- PERFORMANCE MANAGER (GTM, FB, Clarity) ---
+    function initPerformanceManager() {
         const head = document.head || document.getElementsByTagName('head')[0];
 
-        if (container.getAttribute('data-load-fa') === 'true') {
+        if (loadFa) {
             const fa = document.createElement('link');
             fa.rel = 'stylesheet';
             fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-            
             fa.media = 'print';
             fa.onload = function() { this.media = 'all'; };
-            
             head.appendChild(fa);
         }
 
-        let uiLoaded = false;
-        let gtmLoaded = false;
-        let strictTrackersLoaded = false;
+        let uiLoaded = false, gtmLoaded = false, strictTrackersLoaded = false;
 
         function loadLazyUI() {
             if (uiLoaded) return;
             uiLoaded = true;
-            if (container.getAttribute('data-lazy-aos') === 'true') {
-                const aosCSS = document.createElement('link');
-                aosCSS.rel = 'stylesheet';
-                aosCSS.href = 'https://unpkg.com/aos@2.3.1/dist/aos.css';
-                head.appendChild(aosCSS);
-                const aosScript = document.createElement('script');
-                aosScript.src = "https://unpkg.com/aos@2.3.1/dist/aos.js";
-                aosScript.onload = () => AOS.init({ duration: 800, once: true, offset: 50 });
-                document.body.appendChild(aosScript);
+            if (lazyAos) {
+                const aosCSS = document.createElement('link'); aosCSS.rel = 'stylesheet'; aosCSS.href = 'https://unpkg.com/aos@2.3.1/dist/aos.css'; head.appendChild(aosCSS);
+                const aosScript = document.createElement('script'); aosScript.src = "https://unpkg.com/aos@2.3.1/dist/aos.js";
+                aosScript.onload = () => AOS.init({ duration: 800, once: true, offset: 50 }); document.body.appendChild(aosScript);
             }
         }
 
-        // Carrega o Google Tag Manager. Ele internamente respeitará o "Consent Mode"
         function loadGTM() {
-            if (gtmLoaded) return;
+            if (gtmLoaded || !gtmIds) return;
             gtmLoaded = true;
-
-            const gtmIds = container.getAttribute('data-gtm-ids');
-            if (gtmIds) {
-                gtmIds.split(',').forEach(id => {
-                    const cleanId = id.trim();
-                    if (!cleanId) return;
-                    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                    })(window,document,'script','dataLayer',cleanId);
-                });
-            }
+            gtmIds.split(',').forEach(id => {
+                const cleanId = id.trim();
+                if (!cleanId) return;
+                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                })(window,document,'script','dataLayer',cleanId);
+            });
         }
 
-        // Carrega Facebook Pixel e Clarity SOMENTE se o usuário aceitou os cookies
         function loadStrictTrackers() {
-            if (!localStorage.getItem('da_cookie_consent')) return;
+            if (localStorage.getItem('da_cookie_consent') !== 'true') return;
             if (strictTrackersLoaded) return;
             strictTrackersLoaded = true;
 
-            const fbPixel = container.getAttribute('data-fb-pixel');
             if (fbPixel) {
                 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
                 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
@@ -242,7 +255,6 @@
                 fbq('init', fbPixel);
             }
 
-            const clarityId = container.getAttribute('data-clarity-id');
             if (clarityId) {
                 (function(c, l, a, r, i, t, y) {
                     c[a] = c[a] || function() { (c[a].q = c[a].q || []).push(arguments) };
@@ -254,145 +266,134 @@
 
         const triggerLazyLoad = () => {
             loadLazyUI();
-            loadGTM(); // GTM roda bloqueado/anônimo pela LGPD
-            loadStrictTrackers(); // FB/Clarity só rodam se tiver consentimento
+            loadGTM();
+            loadStrictTrackers();
         };
 
-        // Dispara trackers para manter PageSpeed alto
         ['scroll', 'mousemove', 'touchstart', 'click'].forEach(e => window.addEventListener(e, triggerLazyLoad, {once: true, passive: true}));
         setTimeout(triggerLazyLoad, 3500);
 
-        // Se o usuário clicar em "Aceitar", injeta os trackers estritos imediatamente
         window.addEventListener('da_consent_given', loadStrictTrackers);
     }
 
+    // --- FUNÇÃO PRINCIPAL (INICIALIZA TUDO) ---
     async function initReviewsWidget() {
-        const containers = document.querySelectorAll('.data-agent-widget');
-        
-        if (containers.length > 0) {
-            initCookieConsent();
+        // Inicializa funções globais (Roda em todas as páginas)
+        initCookieConsent();
+        initPerformanceManager();
+
+        if (trackLeads) {
+            initWhatsAppTracking(uuid, numeroWhats);
         }
 
-        for (const container of containers) {
-            initPerformanceManager(container);
+        // --- DAQUI PARA BAIXO RODA APENAS ONDE A DIV ESTIVER (Na Home) ---
+        const container = document.getElementById('data-agent-reviews-container');
+        if (!container) return; // Se a div não existir, para a função aqui.
 
-            const uuid = container.getAttribute('data-uuid');
-            const reviewsRaw = container.getAttribute('data-reviews') || "";
-            const numeroWhats = container.getAttribute('data-whatsapp-number');
-            
-            if (container.getAttribute('data-track-leads') === 'true') {
-                initWhatsAppTracking(uuid, numeroWhats);
-            }
+        const reviewIds = reviewsRaw.split(',').map(id => id.trim()).filter(id => id);
+        if (!uuid || reviewIds.length === 0) return;
 
-            const reviewIds = reviewsRaw.split(',').map(id => id.trim()).filter(id => id);
+        container.innerHTML = '<p style="text-align:center; color:#6b7280;">Carregando avaliações...</p>';
 
-            if (!uuid || reviewIds.length === 0) continue;
+        try {
+            const baseUrl = `${API_BASE_URL}/clientes/${uuid}/google_reviews`;
 
-            container.innerHTML = '<p style="text-align:center; color:#6b7280;">Carregando avaliações...</p>';
+            const headerPromise = fetch(`${baseUrl}/header.json`).then(r => r.json());
+            const reviewPromises = reviewIds.map(id =>
+                fetch(`${baseUrl}/avaliacoes/${id}.json`).then(r => r.ok ? r.json() : null)
+            );
 
-            try {
-                const baseUrl = `${API_BASE_URL}/clientes/${uuid}/google_reviews`;
+            const [placeInfo, ...reviewsData] = await Promise.all([headerPromise, ...reviewPromises]);
+            const validReviews = reviewsData.filter(r => r !== null);
 
-                const headerPromise = fetch(`${baseUrl}/header.json`).then(r => r.json());
-                const reviewPromises = reviewIds.map(id =>
-                    fetch(`${baseUrl}/avaliacoes/${id}.json`).then(r => r.ok ? r.json() : null)
-                );
+            const mediaFormatada = String(placeInfo.rating || '5,0').replace('.', ',');
 
-                const [placeInfo, ...reviewsData] = await Promise.all([headerPromise, ...reviewPromises]);
-                const validReviews = reviewsData.filter(r => r !== null);
-
-                const mediaFormatada = String(placeInfo.rating || '5,0').replace('.', ',');
-
-                let htmlContent = `
-                    <style>
-                        .data-agent-no-scrollbar::-webkit-scrollbar { display: none; }
-                        .data-agent-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                    </style>
-                    
-                    <div class="flex flex-col items-center justify-center mb-10">
-                        <span class="text-gray-900 font-bold text-xl uppercase tracking-wider mb-2">Excelente ${mediaFormatada}</span>
-                        <div class="flex text-yellow-400 text-2xl mb-2">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        </div>
-                        <span class="text-sm text-gray-500 font-semibold">Com base em ${placeInfo.reviews || '...'} avaliações</span>
-                        <img src="https://cdn.trustindex.io/assets/platform/Google/logo.svg" alt="Google" class="h-6 mt-2">
+            let htmlContent = `
+                <style>
+                    .data-agent-no-scrollbar::-webkit-scrollbar { display: none; }
+                    .data-agent-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                </style>
+                
+                <div class="flex flex-col items-center justify-center mb-10">
+                    <span class="text-gray-900 font-bold text-xl uppercase tracking-wider mb-2">Excelente ${mediaFormatada}</span>
+                    <div class="flex text-yellow-400 text-2xl mb-2">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                     </div>
+                    <span class="text-sm text-gray-500 font-semibold">Com base em ${placeInfo.reviews || '...'} avaliações</span>
+                    <img src="https://cdn.trustindex.io/assets/platform/Google/logo.svg" alt="Google" class="h-6 mt-2">
+                </div>
 
-                    <div class="relative w-full group">
-                        <button class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
-                                onclick="document.getElementById('slider-${uuid}').scrollBy({left: -350, behavior: 'smooth'})">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                        </button>
+                <div class="relative w-full group">
+                    <button class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
+                            onclick="document.getElementById('slider-${uuid}').scrollBy({left: -350, behavior: 'smooth'})">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
 
-                        <div id="slider-${uuid}" class="flex overflow-x-auto snap-x snap-mandatory gap-6 data-agent-no-scrollbar pb-4 px-2">
-                `;
+                    <div id="slider-${uuid}" class="flex overflow-x-auto snap-x snap-mandatory gap-6 data-agent-no-scrollbar pb-4 px-2">
+            `;
 
-                validReviews.forEach((review, index) => {
-                    const initial = review.author_name.charAt(0).toUpperCase();
-                    let avatarHtml = '';
-                    if (review.profile_photo_url) {
-                        const fotoUrl = `${baseUrl}/avaliacoes/${review.profile_photo_url}`;
-                        avatarHtml = `<img src="${fotoUrl}" alt="Foto de perfil" class="w-12 h-12 rounded-full mr-4 object-cover border border-gray-100">`;
-                    } else {
-                        avatarHtml = `<div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4 text-lg">${initial}</div>`;
-                    }
+            validReviews.forEach((review, index) => {
+                const initial = review.author_name.charAt(0).toUpperCase();
+                let avatarHtml = '';
+                if (review.profile_photo_url) {
+                    const fotoUrl = `${baseUrl}/avaliacoes/${review.profile_photo_url}`;
+                    avatarHtml = `<img src="${fotoUrl}" alt="Foto de perfil" class="w-12 h-12 rounded-full mr-4 object-cover border border-gray-100">`;
+                } else {
+                    avatarHtml = `<div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4 text-lg">${initial}</div>`;
+                }
 
-                    const textId = `txt-${uuid}-${index}`;
-                    const showLerMais = review.text.length > 150;
-
-                    htmlContent += `
-                        <div class="bg-gray-50 border border-gray-100 rounded-xl p-6 shadow-sm flex-none w-full snap-center md:w-[calc(33.333%-1rem)] flex flex-col transition-all hover:shadow-md">
-                            <div class="flex items-center mb-4">
-                                ${avatarHtml}
-                                <div>
-                                    <p class="font-bold text-gray-800 text-sm md:text-base">${review.author_name}</p>
-                                    <p class="text-xs text-gray-500">${timeAgo(review.relative_time_description)}</p>
-                                </div>
-                            </div>
-                            <div class="flex text-yellow-400 text-sm mb-4">
-                                ${generateStars(review.rating)}
-                            </div>
-                            
-                            <div class="flex-grow">
-                                <p id="${textId}" class="text-gray-600 text-sm md:text-base leading-relaxed line-clamp-5 transition-all duration-300">${review.text}</p>
-                                ${showLerMais ? `
-                                    <button onclick="
-                                        const p = document.getElementById('${textId}'); 
-                                        p.classList.toggle('line-clamp-5'); 
-                                        this.innerText = p.classList.contains('line-clamp-5') ? 'Ler mais' : 'Ocultar';
-                                    " class="text-blue-600 hover:text-blue-800 text-sm font-semibold mt-2 focus:outline-none">
-                                        Ler mais
-                                    </button>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                });
+                const textId = `txt-${uuid}-${index}`;
+                const showLerMais = review.text.length > 150;
 
                 htmlContent += `
+                    <div class="bg-gray-50 border border-gray-100 rounded-xl p-6 shadow-sm flex-none w-full snap-center md:w-[calc(33.333%-1rem)] flex flex-col transition-all hover:shadow-md">
+                        <div class="flex items-center mb-4">
+                            ${avatarHtml}
+                            <div>
+                                <p class="font-bold text-gray-800 text-sm md:text-base">${review.author_name}</p>
+                                <p class="text-xs text-gray-500">${timeAgo(review.relative_time_description)}</p>
+                            </div>
                         </div>
-
-                        <button class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
-                                onclick="document.getElementById('slider-${uuid}').scrollBy({left: 350, behavior: 'smooth'})">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                        </button>
-
+                        <div class="flex text-yellow-400 text-sm mb-4">
+                            ${generateStars(review.rating)}
+                        </div>
+                        
+                        <div class="flex-grow">
+                            <p id="${textId}" class="text-gray-600 text-sm md:text-base leading-relaxed line-clamp-5 transition-all duration-300">${review.text}</p>
+                            ${showLerMais ? `
+                                <button onclick="
+                                    const p = document.getElementById('${textId}'); 
+                                    p.classList.toggle('line-clamp-5'); 
+                                    this.innerText = p.classList.contains('line-clamp-5') ? 'Ler mais' : 'Ocultar';
+                                " class="text-blue-600 hover:text-blue-800 text-sm font-semibold mt-2 focus:outline-none">
+                                    Ler mais
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
-
-                    <div class="mt-8 flex justify-center w-full">
-                            <a href="${placeInfo.google_maps_url || '#'}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm">
-                                <img src="https://cdn.trustindex.io/assets/platform/Google/icon.svg" alt="Google" class="w-5 h-5 mr-3">
-                                Ler todas as ${placeInfo.reviews || ''} avaliações no Google
-                            </a>
-                        </div>
                 `;
+            });
 
-                container.innerHTML = htmlContent;
+            htmlContent += `
+                    </div>
+                    <button class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
+                            onclick="document.getElementById('slider-${uuid}').scrollBy({left: 350, behavior: 'smooth'})">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+                <div class="mt-8 flex justify-center w-full">
+                    <a href="${placeInfo.google_maps_url || '#'}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm">
+                        <img src="https://cdn.trustindex.io/assets/platform/Google/icon.svg" alt="Google" class="w-5 h-5 mr-3">
+                        Ler todas as ${placeInfo.reviews || ''} avaliações no Google
+                    </a>
+                </div>
+            `;
 
-            } catch (error) {
-                console.error("Data Agent Erro:", error);
-                container.innerHTML = '<p style="text-align:center; color:#ef4444;">Não foi possível carregar as avaliações no momento.</p>';
-            }
+            container.innerHTML = htmlContent;
+
+        } catch (error) {
+            console.error("Data Agent Erro:", error);
+            container.innerHTML = '<p style="text-align:center; color:#ef4444;">Não foi possível carregar as avaliações no momento.</p>';
         }
     }
 

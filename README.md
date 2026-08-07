@@ -11,28 +11,30 @@ Para que o widget funcione na Landing Page do cliente, você só precisa que o s
 Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimentos você quer mostrar e coloque os IDs (hash de 8 letras) no atributo `data-reviews`.
 
 ```html
-<!-- Crie a seção onde quiser no site -->
+<!-- Crie a seção apenas na página (ex: Home) onde o widget deve aparecer -->
 <section class="py-12 bg-white border-y border-gray-100">
     <div class="max-w-7xl mx-auto px-4">
         
-        <!-- WIDGET DE AVALIAÇÕES E GERENCIAMENTO DE PERFORMANCE -->
-        <div class="data-agent-widget flex flex-col justify-center min-h-[420px]"
-             data-uuid="6b29fc40" 
-             data-reviews="8f4a2b1c, d9a14bc2, a8f3c9e1"
-             data-track-leads="true"
-             data-whatsapp-number="5511999999999"
-             data-load-fa="true"
-             data-lazy-aos="true"
-             data-gtm-ids="GTM-XXXXXXXX, GTM-YYYYYYYY"
-             data-fb-pixel="SEU_PIXEL_AQUI"
-             data-clarity-id="SEU_CLARITY_AQUI">
+        <!-- WIDGET DE AVALIAÇÕES -->
+        <!-- O script usará este ID para injetar as avaliações aqui -->
+        <div id="data-agent-reviews-container" class="flex flex-col justify-center min-h-[420px]">
         </div>
 
     </div>
 </section>
 
-<!-- Importe o Script no final do body -->
-<script src="https://data.ekron.ia.br/widget.min.js" defer></script>
+<!-- Importe o Script no base.html (roda em todas as páginas) -->
+<script src="https://data.ekron.ia.br/widget.min.js" defer
+    id="data-agent-script"
+    data-uuid="6b29fc40" 
+    data-reviews="8f4a2b1c, d9a14bc2, a8f3c9e1"
+    data-track-leads="true"
+    data-whatsapp-number="5511999999999"
+    data-load-fa="true"
+    data-lazy-aos="true"
+    data-gtm-ids="GTM-XXXXXXXX, GTM-YYYYYYYY"
+    data-fb-pixel="SEU_PIXEL_AQUI"
+    data-clarity-id="SEU_CLARITY_AQUI"></script>
 
 <!-- 
 NOTAS DE IMPLEMENTAÇÃO E PERFORMANCE:
@@ -42,15 +44,15 @@ NOTAS DE IMPLEMENTAÇÃO E PERFORMANCE:
    - Se `data-whatsapp-number` estiver preenchido, os números de destino originais serão substituídos pelo número configurado.
    - O script injeta silenciosamente o "Protocolo de Atendimento" na mensagem e dispara a métrica de clique para o NGINX.
 
-2. GERENCIAMENTO DE PERFORMANCE (LAZY LOAD INTELIGENTE):
-   Para garantir nota máxima no PageSpeed (90+), o script gerencia o carregamento de scripts pesados em segundo plano, disparando-os apenas na primeira interação do usuário (scroll, clique, movimento do mouse) ou após 3.5 segundos:
-   - `data-load-fa="true"`: Carrega o Font Awesome imediatamente para evitar que as estrelas do widget pisquem ou fiquem invisíveis.
+2. GERENCIAMENTO DE PERFORMANCE (LAZY LOAD INTELIGENTE) E LGPD:
+   O script renderiza um Banner de Cookies (Consent Mode V2) e gerencia o carregamento de scripts pesados, disparando-os apenas na primeira interação do usuário (scroll, clique, movimento) ou após 3.5 segundos, preservando a nota máxima no PageSpeed (90+).
+   - `data-load-fa="true"`: Carrega o Font Awesome para renderizar as estrelas das avaliações.
    - `data-lazy-aos="true"`: Carrega e inicializa as animações AOS de forma otimizada.
-   - `data-gtm-ids`: Insere um ou mais IDs do Google Tag Manager (se houver mais de um, separe por vírgulas).
-   - `data-fb-pixel`: Insere e inicializa o Pixel do Facebook.
-   - `data-clarity-id`: Insere o rastreamento do Microsoft Clarity.
+   - `data-gtm-ids`: Inicializa o GTM respeitando o status de consentimento do usuário.
+   - `data-fb-pixel`: Insere o Pixel do Facebook (Disparado APENAS se o usuário aceitar os cookies).
+   - `data-clarity-id`: Insere o Microsoft Clarity (Disparado APENAS se o usuário aceitar os cookies).
    
-   *Dica:* Se um cliente específico não utilizar alguma destas ferramentas (ex: não usa Pixel), basta remover o atributo correspondente da tag `<div>`.
+   *Dica:* Se um cliente específico não utilizar alguma destas ferramentas (ex: não usa Pixel ou GTM), basta remover o atributo correspondente diretamente da tag `<script>`.
 -->
 ```
 
