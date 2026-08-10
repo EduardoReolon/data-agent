@@ -329,7 +329,7 @@
                 </div>
 
                 <div class="tw:relative tw:w-full tw:group">
-                    <button class="tw:absolute tw:-left-4 tw:md:-left-6 tw:top-1/2 tw:-translate-y-1/2 tw:bg-white tw:border tw:border-gray-200 tw:shadow-lg tw:rounded-full tw:w-12 tw:h-12 tw:flex tw:items-center tw:justify-center tw:text-gray-600 tw:z-10 tw:hover:bg-gray-50 tw:focus:outline-none tw:hidden tw:md:flex tw:transition-transform tw:hover:scale-105" 
+                    <button aria-label="Avaliações anteriores" class="tw:absolute tw:-left-4 tw:md:-left-6 tw:top-1/2 tw:-translate-y-1/2 tw:bg-white tw:border tw:border-gray-200 tw:shadow-lg tw:rounded-full tw:w-12 tw:h-12 tw:flex tw:items-center tw:justify-center tw:text-gray-600 tw:z-10 tw:hover:bg-gray-50 tw:focus:outline-none tw:hidden tw:md:flex tw:transition-transform tw:hover:scale-105" 
                             onclick="document.getElementById('slider-${uuid}').scrollBy({left: -350, behavior: 'smooth'})">
                         <svg class="tw:w-6 tw:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     </button>
@@ -381,7 +381,7 @@
 
             htmlContent += `
                     </div>
-                    <button class="tw:absolute tw:-right-4 tw:md:-right-6 tw:top-1/2 tw:-translate-y-1/2 tw:bg-white tw:border tw:border-gray-200 tw:shadow-lg tw:rounded-full tw:w-12 tw:h-12 tw:flex tw:items-center tw:justify-center tw:text-gray-600 tw:z-10 tw:hover:bg-gray-50 tw:focus:outline-none tw:hidden tw:md:flex tw:transition-transform tw:hover:scale-105" 
+                    <button aria-label="Próximas avaliações" class="tw:absolute tw:-right-4 tw:md:-right-6 tw:top-1/2 tw:-translate-y-1/2 tw:bg-white tw:border tw:border-gray-200 tw:shadow-lg tw:rounded-full tw:w-12 tw:h-12 tw:flex tw:items-center tw:justify-center tw:text-gray-600 tw:z-10 tw:hover:bg-gray-50 tw:focus:outline-none tw:hidden tw:md:flex tw:transition-transform tw:hover:scale-105" 
                             onclick="document.getElementById('slider-${uuid}').scrollBy({left: 350, behavior: 'smooth'})">
                         <svg class="tw:w-6 tw:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </button>
