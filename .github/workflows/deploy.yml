@@ -33,10 +33,8 @@ jobs:
         run: |
           if [ -f "public/widget.js" ]; then
             echo "Gerando CSS do widget..."
-            # O 'npm ci' faz uma instalação limpa baseada no seu package-lock.json
             npm ci
-            # Executa a compilação garantindo estabilidade
-            npx tailwindcss -i ./public/input.css -o ./public/style.css --minify
+            npx @tailwindcss/cli -i ./public/input.css -o ./public/style.css --minify
             echo "CSS compilado: public/style.css"
           fi
 
