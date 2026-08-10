@@ -33,8 +33,7 @@ jobs:
         run: |
           if [ -f "public/widget.js" ]; then
             echo "Gerando CSS do widget..."
-            npm install -D tailwindcss
-            npx tailwindcss -i ./public/input.css -o ./public/style.css --minify
+            npx --yes tailwindcss@latest -i ./public/input.css -o ./public/style.css --minify
             echo "CSS compilado: public/style.css"
           fi
 
