@@ -319,22 +319,22 @@
                     .data-agent-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
                 </style>
                 
-                <div class="flex flex-col items-center justify-center mb-10">
-                    <span class="text-gray-900 font-bold text-xl uppercase tracking-wider mb-2">Excelente ${mediaFormatada}</span>
-                    <div class="flex text-yellow-400 text-2xl mb-2">
+                <div class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:mb-10">
+                    <span class="tw:text-gray-900 tw:font-bold tw:text-xl tw:uppercase tw:tracking-wider tw:mb-2">Excelente ${mediaFormatada}</span>
+                    <div class="tw:flex tw:text-yellow-400 tw:text-2xl tw:mb-2">
                         <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                     </div>
-                    <span class="text-sm text-gray-500 font-semibold">Com base em ${placeInfo.reviews || '...'} avaliações</span>
-                    <img src="https://cdn.trustindex.io/assets/platform/Google/logo.svg" alt="Google" class="h-6 mt-2">
+                    <span class="tw:text-sm tw:text-gray-500 tw:font-semibold">Com base em ${placeInfo.reviews || '...'} avaliações</span>
+                    <img src="https://cdn.trustindex.io/assets/platform/Google/logo.svg" alt="Google" class="tw:h-6 tw:mt-2">
                 </div>
 
-                <div class="relative w-full group">
-                    <button class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
+                <div class="tw:relative tw:w-full tw:group">
+                    <button class="tw:absolute tw:-left-4 tw:md:-left-6 tw:top-1/2 tw:-translate-y-1/2 tw:bg-white tw:border tw:border-gray-200 tw:shadow-lg tw:rounded-full tw:w-12 tw:h-12 tw:flex tw:items-center tw:justify-center tw:text-gray-600 tw:z-10 tw:hover:bg-gray-50 tw:focus:outline-none tw:hidden tw:md:flex tw:transition-transform tw:hover:scale-105" 
                             onclick="document.getElementById('slider-${uuid}').scrollBy({left: -350, behavior: 'smooth'})">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        <svg class="tw:w-6 tw:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     </button>
 
-                    <div id="slider-${uuid}" class="flex overflow-x-auto snap-x snap-mandatory gap-6 data-agent-no-scrollbar pb-4 px-2">
+                    <div id="slider-${uuid}" class="tw:flex tw:overflow-x-auto tw:snap-x tw:snap-mandatory tw:gap-6 data-agent-no-scrollbar tw:pb-4 tw:px-2">
             `;
 
             validReviews.forEach((review, index) => {
@@ -342,35 +342,35 @@
                 let avatarHtml = '';
                 if (review.profile_photo_url) {
                     const fotoUrl = `${baseUrl}/avaliacoes/${review.profile_photo_url}`;
-                    avatarHtml = `<img src="${fotoUrl}" alt="Foto de perfil" class="w-12 h-12 rounded-full mr-4 object-cover border border-gray-100">`;
+                    avatarHtml = `<img src="${fotoUrl}" alt="Foto de perfil" class="tw:w-12 tw:h-12 tw:rounded-full tw:mr-4 tw:object-cover tw:border tw:border-gray-100">`;
                 } else {
-                    avatarHtml = `<div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4 text-lg">${initial}</div>`;
+                    avatarHtml = `<div class="tw:w-12 tw:h-12 tw:bg-blue-600 tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-white tw:font-bold tw:mr-4 tw:text-lg">${initial}</div>`;
                 }
 
                 const textId = `txt-${uuid}-${index}`;
                 const showLerMais = review.text.length > 150;
 
                 htmlContent += `
-                    <div class="bg-gray-50 border border-gray-100 rounded-xl p-6 shadow-sm flex-none w-full snap-center md:w-[calc(33.333%-1rem)] flex flex-col transition-all hover:shadow-md">
-                        <div class="flex items-center mb-4">
+                    <div class="tw:bg-gray-50 tw:border tw:border-gray-100 tw:rounded-xl tw:p-6 tw:shadow-sm tw:flex-none tw:w-full tw:snap-center tw:md:w-[calc(33.333%-1rem)] tw:flex tw:flex-col tw:transition-all tw:hover:shadow-md">
+                        <div class="tw:flex tw:items-center tw:mb-4">
                             ${avatarHtml}
                             <div>
-                                <p class="font-bold text-gray-800 text-sm md:text-base">${review.author_name}</p>
-                                <p class="text-xs text-gray-500">${timeAgo(review.relative_time_description)}</p>
+                                <p class="tw:font-bold tw:text-gray-800 tw:text-sm tw:md:text-base">${review.author_name}</p>
+                                <p class="tw:text-xs tw:text-gray-500">${timeAgo(review.relative_time_description)}</p>
                             </div>
                         </div>
-                        <div class="flex text-yellow-400 text-sm mb-4">
+                        <div class="tw:flex tw:text-yellow-400 tw:text-sm tw:mb-4">
                             ${generateStars(review.rating)}
                         </div>
                         
-                        <div class="flex-grow">
-                            <p id="${textId}" class="text-gray-600 text-sm md:text-base leading-relaxed line-clamp-5 transition-all duration-300">${review.text}</p>
+                        <div class="tw:flex-grow">
+                            <p id="${textId}" class="tw:text-gray-600 tw:text-sm tw:md:text-base tw:leading-relaxed tw:line-clamp-5 tw:transition-all tw:duration-300">${review.text}</p>
                             ${showLerMais ? `
                                 <button onclick="
                                     const p = document.getElementById('${textId}'); 
-                                    p.classList.toggle('line-clamp-5'); 
-                                    this.innerText = p.classList.contains('line-clamp-5') ? 'Ler mais' : 'Ocultar';
-                                " class="text-blue-600 hover:text-blue-800 text-sm font-semibold mt-2 focus:outline-none">
+                                    p.classList.toggle('tw:line-clamp-5'); 
+                                    this.innerText = p.classList.contains('tw:line-clamp-5') ? 'Ler mais' : 'Ocultar';
+                                " class="tw:text-blue-600 tw:hover:text-blue-800 tw:text-sm tw:font-semibold tw:mt-2 tw:focus:outline-none">
                                     Ler mais
                                 </button>
                             ` : ''}
@@ -381,14 +381,14 @@
 
             htmlContent += `
                     </div>
-                    <button class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-gray-600 z-10 hover:bg-gray-50 focus:outline-none hidden md:flex transition-transform hover:scale-105" 
+                    <button class="tw:absolute tw:-right-4 tw:md:-right-6 tw:top-1/2 tw:-translate-y-1/2 tw:bg-white tw:border tw:border-gray-200 tw:shadow-lg tw:rounded-full tw:w-12 tw:h-12 tw:flex tw:items-center tw:justify-center tw:text-gray-600 tw:z-10 tw:hover:bg-gray-50 tw:focus:outline-none tw:hidden tw:md:flex tw:transition-transform tw:hover:scale-105" 
                             onclick="document.getElementById('slider-${uuid}').scrollBy({left: 350, behavior: 'smooth'})">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        <svg class="tw:w-6 tw:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </button>
                 </div>
-                <div class="mt-8 flex justify-center w-full">
-                    <a href="${placeInfo.google_maps_url || '#'}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm">
-                        <img src="https://cdn.trustindex.io/assets/platform/Google/icon.svg" alt="Google" class="w-5 h-5 mr-3">
+                <div class="tw:mt-8 tw:flex tw:justify-center tw:w-full">
+                    <a href="${placeInfo.google_maps_url || '#'}" target="_blank" rel="noopener noreferrer" class="tw:inline-flex tw:items-center tw:justify-center tw:px-6 tw:py-3 tw:border tw:border-gray-200 tw:rounded-full tw:text-sm tw:font-semibold tw:text-gray-700 tw:bg-white tw:hover:bg-gray-50 tw:hover:text-blue-600 tw:transition-colors tw:shadow-sm">
+                        <img src="https://cdn.trustindex.io/assets/platform/Google/icon.svg" alt="Google" class="tw:w-5 tw:h-5 tw:mr-3">
                         Ler todas as ${placeInfo.reviews || ''} avaliações no Google
                     </a>
                 </div>
