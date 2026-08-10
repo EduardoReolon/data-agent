@@ -1,0 +1,24 @@
+{
+  "name": "data-agent",
+  "version": "1.0.0",
+  "description": "Microsserviço de \"Static Site Generation\" para APIs. O Data Agent busca dados de APIs pesadas/pagas (como Google Places / SerpApi), faz o cache local baixando imagens e gera arquivos estáticos (Micro-JSONs) de altíssima performance para Landing Pages.",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EduardoReolon/data-agent.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/EduardoReolon/data-agent/issues"
+  },
+  "homepage": "https://github.com/EduardoReolon/data-agent#readme",
+  "devDependencies": {
+    "tailwindcss": "^4.3.3"
+  }
+}
