@@ -24,6 +24,7 @@
     const clarityId = currentScript.getAttribute('data-clarity-id');
     const loadFa = currentScript.getAttribute('data-load-fa') === 'true';
     const lazyAos = currentScript.getAttribute('data-lazy-aos') === 'true';
+    const gmapSrc = currentScript.getAttribute('data-gmap-src');
 
     // --- CONFIGURAÇÃO INICIAL GOOGLE CONSENT MODE V2 ---
     window.dataLayer = window.dataLayer || [];
@@ -210,6 +211,8 @@
     // --- PERFORMANCE MANAGER (GTM, FB, Clarity) ---
     function initPerformanceManager() {
         const head = document.head || document.getElementsByTagName('head')[0];
+        // Pega a tag do script para ler os atributos nativamente, caso nãp tenham sido extraídos no topo
+        const scriptTag = document.getElementById('data-agent-script'); 
 
         if (loadFa) {
             const fa = document.createElement('link');
@@ -220,7 +223,7 @@
             head.appendChild(fa);
         }
 
-        let uiLoaded = false, gtmLoaded = false, strictTrackersLoaded = false;
+        let uiLoaded = false, gtmLoaded = false, strictTrackersLoaded = false, mapLoaded = false;
 
         function loadLazyUI() {
             if (uiLoaded) return;
@@ -251,7 +254,7 @@
             if (strictTrackersLoaded) return;
             strictTrackersLoaded = true;
 
-            if (fbPixel) {
+            if (typeof fbPixel !== 'undefined' && fbPixel) {
                 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
                 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
                 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
@@ -260,7 +263,7 @@
                 fbq('init', fbPixel);
             }
 
-            if (clarityId) {
+            if (typeof clarityId !== 'undefined' && clarityId) {
                 (function(c, l, a, r, i, t, y) {
                     c[a] = c[a] || function() { (c[a].q = c[a].q || []).push(arguments) };
                     t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
@@ -269,10 +272,23 @@
             }
         }
 
+        function loadGMap() {
+            if (mapLoaded || !scriptTag) return;
+            if (!gmapSrc) return;
+
+            const mapContainer = document.getElementById('data-agent-map-container');
+            if (!mapContainer) return;
+
+            mapLoaded = true;
+            // Injeta o iframe de forma limpa
+            mapContainer.innerHTML = `<iframe src="${gmapSrc}" title="Mapa de localização" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>`;
+        }
+
         const triggerLazyLoad = () => {
             loadLazyUI();
             loadGTM();
             loadStrictTrackers();
+            loadGMap();
         };
 
         ['scroll', 'mousemove', 'touchstart', 'click'].forEach(e => window.addEventListener(e, triggerLazyLoad, {once: true, passive: true}));

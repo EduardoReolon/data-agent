@@ -23,6 +23,10 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
     </div>
 </section>
 
+<!-- CONTAINER DO MAPA OTIMIZADO (Opcional) -->
+<!-- Se este container existir e a URL for passada no script, o mapa será carregado via Lazy Load -->
+<div id="data-agent-map-container" class="w-full h-64 bg-gray-100 overflow-hidden"></div>
+
 <!-- Importe o Script no base.html (roda em todas as páginas) -->
 <script src="https://data.ekron.ia.br/widget.min.js" defer
     id="data-agent-script"
@@ -34,7 +38,8 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
     data-lazy-aos="true"
     data-gtm-ids="GTM-XXXXXXXX, GTM-YYYYYYYY"
     data-fb-pixel="SEU_PIXEL_AQUI"
-    data-clarity-id="SEU_CLARITY_AQUI"></script>
+    data-clarity-id="SEU_CLARITY_AQUI"
+    data-gmap-src="https://maps.google.com/maps?q=Av.+Brasil...+Mandirituba...&t=&z=16&ie=UTF8&iwloc=&output=embed"></script>
 
 <!-- 
 NOTAS DE IMPLEMENTAÇÃO E PERFORMANCE:
@@ -51,8 +56,9 @@ NOTAS DE IMPLEMENTAÇÃO E PERFORMANCE:
    - `data-gtm-ids`: Inicializa o GTM respeitando o status de consentimento do usuário.
    - `data-fb-pixel`: Insere o Pixel do Facebook (Disparado APENAS se o usuário aceitar os cookies).
    - `data-clarity-id`: Insere o Microsoft Clarity (Disparado APENAS se o usuário aceitar os cookies).
+   - `data-gmap-src`: Injeta o Google Maps dinamicamente no container `<div id="data-agent-map-container">`, eliminando a punição de render-blocking do PageSpeed.
    
-   *Dica:* Se um cliente específico não utilizar alguma destas ferramentas (ex: não usa Pixel ou GTM), basta remover o atributo correspondente diretamente da tag `<script>`.
+   *Dica:* Se um cliente específico não utilizar alguma destas ferramentas (ex: não usa Pixel, GTM ou Mapa), basta remover o atributo correspondente diretamente da tag `<script>`.
 -->
 ```
 
