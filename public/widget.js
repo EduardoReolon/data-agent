@@ -9,6 +9,11 @@
     const scriptUrl = new URL(currentScript.src);
     const API_BASE_URL = scriptUrl.origin;
 
+    const widgetStyle = document.createElement('link');
+    widgetStyle.rel = 'stylesheet';
+    widgetStyle.href = `${API_BASE_URL}/style.css`;
+    document.head.appendChild(widgetStyle);
+
     // Variáveis lidas do script
     const uuid = currentScript.getAttribute('data-uuid');
     const reviewsRaw = currentScript.getAttribute('data-reviews') || "";

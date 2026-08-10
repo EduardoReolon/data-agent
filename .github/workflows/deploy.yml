@@ -29,6 +29,15 @@ jobs:
             echo "public/widget.js não encontrado. Pulando etapa."
           fi
 
+      - name: Build Tailwind CSS
+        run: |
+          if [ -f "public/widget.js" ]; then
+            echo "Gerando CSS do widget..."
+            npm install -D tailwindcss
+            npx tailwindcss -i ./public/input.css -o ./public/style.css --minify
+            echo "CSS compilado: public/style.css"
+          fi
+
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
