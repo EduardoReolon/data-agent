@@ -49,7 +49,10 @@ map $http_referer $clean_domain {
     # Se o referer estiver vazio (Testes locais, Postman, etc)
     "" "teste_local";
 
-    # Regex para extrair apenas o domínio (ignora http://, https:// e caminhos)
+    # NOVO: Se tiver www., extrai apenas o que vem DEPOIS dele
+    "~^https?://www\.([^/:]+)" $1;
+
+    # Se NÃO tiver www, extrai o domínio normalmente
     "~^https?://([^/:]+)" $1;
 
     # Fallback para acessos anômalos
