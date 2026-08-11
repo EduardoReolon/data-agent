@@ -199,7 +199,8 @@
                 link.setAttribute('data-tracked', 'true');
 
                 link.addEventListener('click', () => {
-                    const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}`;
+                    const currentDomain = window.location.hostname.replace(/^www\./, '');
+                    const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}&domain=${currentDomain}`;
                     fetch(trackingUrl, { mode: 'no-cors' }).catch(() => { });
                 });
             } catch (e) {

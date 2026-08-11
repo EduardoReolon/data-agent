@@ -36,7 +36,7 @@ Adicione as configurações abaixo **fora** do bloco `server` (no nível `http` 
 log_format tracking_json escape=json '{'
     '"timestamp": "$time_iso8601", '
     '"ip": "$remote_addr", '
-    '"dominio": "$http_referer", '
+    '"dominio": "$arg_domain", '
     '"uuid_cliente": "$arg_uuid", '
     '"origem": "$arg_origem", '
     '"id_curto": "$arg_id", '
@@ -44,19 +44,11 @@ log_format tracking_json escape=json '{'
     '"user_agent": "$http_user_agent"'
 '}';
 
-# Filtra a URL inteira (Referer) e extrai apenas o domínio principal
-map $http_referer $clean_domain {
-    # Se o referer estiver vazio (Testes locais, Postman, etc)
-    "" "teste_local";
-
-    # NOVO: Se tiver www., extrai apenas o que vem DEPOIS dele
-    "~^https?://www\.([^/:]+)" $1;
-
-    # Se NÃO tiver www, extrai o domínio normalmente
-    "~^https?://([^/:]+)" $1;
-
-    # Fallback para acessos anômalos
-    default "desconhecido";
+# Em vez de fazer um regex complexo no referer, 
+# garanta que o $arg_domain não venha vazio, criando um fallback seguro.
+map $arg_domain $safe_domain {
+    "" "site_desconhecido";
+    "~^(.+)$" $1;
 }
 
 # Cache de descritores de arquivos para otimizar a gravação dinâmica
@@ -93,7 +85,7 @@ server {
         }
 
         # Grava o log dinamicamente usando a variável $clean_domain
-        access_log /var/log/nginx/leads/$clean_domain.log tracking_json;
+        access_log /var/log/nginx/leads/$safe_domain.log tracking_json;
 
         # Retorna sucesso sem conteúdo
         return 204;
