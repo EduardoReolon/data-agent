@@ -16,7 +16,6 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
     <div class="max-w-7xl mx-auto px-4">
         
         <!-- WIDGET DE AVALIAÇÕES -->
-        <!-- O script usará este ID para injetar as avaliações aqui -->
         <div id="data-agent-reviews-container" class="flex flex-col justify-center min-h-[420px]">
         </div>
 
@@ -24,7 +23,6 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
 </section>
 
 <!-- CONTAINER DO MAPA OTIMIZADO (Opcional) -->
-<!-- Se este container existir e a URL for passada no script, o mapa será carregado via Lazy Load -->
 <div id="data-agent-map-container" class="w-full h-64 bg-gray-100 overflow-hidden"></div>
 
 <!-- Importe o Script no base.html (roda em todas as páginas) -->
@@ -33,6 +31,7 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
     data-uuid="6b29fc40" 
     data-reviews="8f4a2b1c, d9a14bc2, a8f3c9e1"
     data-track-leads="true"
+    data-google-leads="true"
     data-whatsapp-number="5511999999999"
     data-load-fa="true"
     data-lazy-aos="true"
@@ -45,20 +44,23 @@ Abra o arquivo `arquivogeral.json` gerado pelo sistema, escolha quais depoimento
 NOTAS DE IMPLEMENTAÇÃO E PERFORMANCE:
 
 1. RASTREAMENTO E SUBSTITUIÇÃO DO WHATSAPP:
-   - Ao habilitar `data-track-leads="true"`, o script busca automaticamente qualquer tag <a> cujo atributo `href` contenha "api.whatsapp.com/send", "wa.me" ou "web.whatsapp.com/send".
-   - Se `data-whatsapp-number` estiver preenchido, os números de destino originais serão substituídos pelo número configurado.
-   - O script injeta silenciosamente o "Protocolo de Atendimento" na mensagem e dispara a métrica de clique para o NGINX.
+   - `data-track-leads="true"`: Busca automaticamente tags <a> com links do WhatsApp (api.whatsapp, wa.me, etc).
+   - Se `data-whatsapp-number` estiver preenchido, os números originais são substituídos.
+   - O script injeta o "Protocolo de Atendimento" e dispara a métrica para o NGINX.
 
-2. GERENCIAMENTO DE PERFORMANCE (LAZY LOAD INTELIGENTE) E LGPD:
-   O script renderiza um Banner de Cookies (Consent Mode V2) e gerencia o carregamento de scripts pesados, disparando-os apenas na primeira interação do usuário (scroll, clique, movimento) ou após 3.5 segundos, preservando a nota máxima no PageSpeed (90+).
-   - `data-load-fa="true"`: Carrega o Font Awesome para renderizar as estrelas das avaliações.
-   - `data-lazy-aos="true"`: Carrega e inicializa as animações AOS de forma otimizada.
-   - `data-gtm-ids`: Inicializa o GTM respeitando o status de consentimento do usuário.
-   - `data-fb-pixel`: Insere o Pixel do Facebook (Disparado APENAS se o usuário aceitar os cookies).
-   - `data-clarity-id`: Insere o Microsoft Clarity (Disparado APENAS se o usuário aceitar os cookies).
-   - `data-gmap-src`: Injeta o Google Maps dinamicamente no container `<div id="data-agent-map-container">`, eliminando a punição de render-blocking do PageSpeed.
-   
-   *Dica:* Se um cliente específico não utilizar alguma destas ferramentas (ex: não usa Pixel, GTM ou Mapa), basta remover o atributo correspondente diretamente da tag `<script>`.
+2. CONVERSÕES DO GOOGLE (GTM / GA4 / ADS):
+   - `data-google-leads="true"`: Habilita o envio do evento `generate_lead` para o Google Tag Manager (GTM).
+   - ATENÇÃO: Atualmente, este disparo depende da auto-descoberta de botões do WhatsApp. Portanto, para o rastreamento do Google funcionar, a chave `data-track-leads="true"` DEVE estar ativada obrigatoriamente.
+   `generate_lead` para o Google Tag Manager (GTM) sempre que um link de WhatsApp descoberto pelo script for clicado. O GTM deve estar configurado para repassar esse evento como conversão.
+
+3. GERENCIAMENTO DE PERFORMANCE (LAZY LOAD) E LGPD:
+   O script gerencia o carregamento das tags apenas na primeira interação ou após 3.5s.
+   - `data-load-fa="true"`: Carrega o Font Awesome.
+   - `data-lazy-aos="true"`: Carrega animações AOS.
+   - `data-gtm-ids`: Inicializa o GTM (respeitando consentimento).
+   - `data-fb-pixel`: Inicializa Pixel do Facebook (respeitando consentimento).
+   - `data-clarity-id`: Inicializa Microsoft Clarity (respeitando consentimento).
+   - `data-gmap-src`: Injeta Google Maps via Lazy Load.
 -->
 ```
 

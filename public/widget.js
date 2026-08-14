@@ -19,6 +19,7 @@
     const reviewsRaw = currentScript.getAttribute('data-reviews') || "";
     const numeroWhats = currentScript.getAttribute('data-whatsapp-number');
     const trackLeads = currentScript.getAttribute('data-track-leads') === 'true';
+    const googleLeads = currentScript.getAttribute('data-google-leads') === 'true';
     const gtmIds = currentScript.getAttribute('data-gtm-ids');
     const fbPixel = currentScript.getAttribute('data-fb-pixel');
     const clarityId = currentScript.getAttribute('data-clarity-id');
@@ -201,7 +202,19 @@
                 link.addEventListener('click', () => {
                     const currentDomain = window.location.hostname.replace(/^www\./, '');
                     const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}&domain=${currentDomain}`;
-                    fetch(trackingUrl, { mode: 'no-cors' }).catch(() => { });
+                    fetch(trackingUrl, {
+                        mode: 'no-cors',
+                        keepalive: true
+                    }).catch(() => { });
+
+                    if (googleLeads) {
+                        window.dataLayer = window.dataLayer || [];
+                        window.dataLayer.push({
+                            'event': 'generate_lead',
+                            'lead_id': idCurto,
+                            'lead_source': origem
+                        });
+                    }
                 });
             } catch (e) {
                 console.error("Data Agent: Erro ao processar link do WhatsApp", e);
