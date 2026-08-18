@@ -170,15 +170,29 @@
     function initWhatsAppTracking(uuid, numeroWhatsApp) {
         const urlParams = new URLSearchParams(window.location.search);
         let origem = "O";
+        const utmSource = (urlParams.get('utm_source') || "").toLowerCase();
+
+        // 1. Verificação por parâmetros de ID de clique (Click IDs)
         if (urlParams.has('gclid') || urlParams.has('wbraid') || urlParams.has('gbraid')) origem = "G";
         else if (urlParams.has('fbclid')) origem = "F";
-        else if (urlParams.has('utm_source')) {
-            const utm = urlParams.get('utm_source').toLowerCase();
-            if (utm.includes('google')) origem = "G";
-            else if (utm.includes('facebook') || utm.includes('meta') || utm.includes('instagram')) origem = "F";
+        else if (urlParams.has('li_fat_id')) origem = "L"; // LinkedIn
+        else if (urlParams.has('ttclid')) origem = "T"; // TikTok
+        else if (urlParams.has('twclid')) origem = "X"; // Twitter / X
+        else if (urlParams.has('epik')) origem = "P"; // Pinterest
+        // 2. Verificação via utm_source
+        else if (utmSource) {
+            if (utmSource.includes('google')) origem = "G";
+            else if (utmSource.includes('facebook') || utmSource.includes('meta') || utmSource.includes('instagram')) origem = "F";
+            else if (utmSource.includes('linkedin')) origem = "L";
+            else if (utmSource.includes('tiktok')) origem = "T";
+            else if (utmSource.includes('twitter') || utmSource === 'x') origem = "X";
+            else if (utmSource.includes('pinterest')) origem = "P";
+            else if (utmSource.includes('youtube')) origem = "Y";
         }
 
-        const clickId = urlParams.get('gclid') || urlParams.get('fbclid') || "organico";
+        // Captura o ID do clique correspondente ou define como organico
+        const clickId = urlParams.get('gclid') || urlParams.get('fbclid') || urlParams.get('li_fat_id') || urlParams.get('ttclid') || urlParams.get('twclid') || urlParams.get('epik') || "organico";
+
         const randomId = Math.random().toString(36).substring(2, 7).toUpperCase();
         const idCurto = `${origem}-${randomId}`;
         const protocolo = `*Protocolo de Atendimento: #${idCurto}*`;
@@ -285,7 +299,7 @@
                 !function (f, b, e, v, n, t, s) {
                     if (f.fbq) return; n = f.fbq = function () {
                         n.callMethod ?
-                        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+                            n.callMethod.apply(n, arguments) : n.queue.push(arguments)
                     }; if (!f._fbq) f._fbq = n;
                     n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
                     t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
