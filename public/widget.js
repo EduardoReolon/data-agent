@@ -29,8 +29,8 @@
 
     // --- CONFIGURAÇÃO INICIAL GOOGLE CONSENT MODE V2 ---
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    
+    function gtag() { dataLayer.push(arguments); }
+
     const userHasConsent = localStorage.getItem('da_cookie_consent') === 'true';
 
     gtag('consent', 'default', {
@@ -74,7 +74,7 @@
 
     // --- NOVO: BANNER DE COOKIES PARA LANDING PAGE ---
     function initCookieConsent() {
-        if (localStorage.getItem('da_cookie_consent') !== null) return; 
+        if (localStorage.getItem('da_cookie_consent') !== null) return;
 
         const banner = document.createElement('div');
         banner.id = 'da-cookie-banner';
@@ -161,7 +161,7 @@
         });
 
         document.getElementById('da-cookie-reject').addEventListener('click', () => {
-            localStorage.setItem('da_cookie_consent', 'false'); 
+            localStorage.setItem('da_cookie_consent', 'false');
             closeBanner();
         });
     }
@@ -177,10 +177,17 @@
             if (utm.includes('google')) origem = "G";
             else if (utm.includes('facebook') || utm.includes('meta') || utm.includes('instagram')) origem = "F";
         }
+
         const clickId = urlParams.get('gclid') || urlParams.get('fbclid') || "organico";
         const randomId = Math.random().toString(36).substring(2, 7).toUpperCase();
         const idCurto = `${origem}-${randomId}`;
         const protocolo = `*Protocolo de Atendimento: #${idCurto}*`;
+
+        // Captura das UTMs
+        const utmCampaign = urlParams.get('utm_campaign') || "";
+        const utmMedium = urlParams.get('utm_medium') || "";
+        const utmTerm = urlParams.get('utm_term') || "";
+        const utmContent = urlParams.get('utm_content') || "";
 
         const linksWhatsapp = document.querySelectorAll('a[href*="api.whatsapp.com/send"]:not([data-tracked]), a[href*="wa.me/"]:not([data-tracked]), a[href*="web.whatsapp.com/send"]:not([data-tracked])');
 
@@ -201,7 +208,10 @@
 
                 link.addEventListener('click', () => {
                     const currentDomain = window.location.hostname.replace(/^www\./, '');
-                    const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}&domain=${currentDomain}`;
+
+                    // Envio silencioso das UTMs para o Nginx
+                    const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}&domain=${currentDomain}&utm_campaign=${encodeURIComponent(utmCampaign)}&utm_medium=${encodeURIComponent(utmMedium)}&utm_term=${encodeURIComponent(utmTerm)}&utm_content=${encodeURIComponent(utmContent)}`;
+
                     fetch(trackingUrl, {
                         mode: 'no-cors',
                         keepalive: true
@@ -226,14 +236,14 @@
     function initPerformanceManager() {
         const head = document.head || document.getElementsByTagName('head')[0];
         // Pega a tag do script para ler os atributos nativamente, caso nãp tenham sido extraídos no topo
-        const scriptTag = document.getElementById('data-agent-script'); 
+        const scriptTag = document.getElementById('data-agent-script');
 
         if (loadFa) {
             const fa = document.createElement('link');
             fa.rel = 'stylesheet';
             fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
             fa.media = 'print';
-            fa.onload = function() { this.media = 'all'; };
+            fa.onload = function () { this.media = 'all'; };
             head.appendChild(fa);
         }
 
@@ -255,11 +265,14 @@
             gtmIds.split(',').forEach(id => {
                 const cleanId = id.trim();
                 if (!cleanId) return;
-                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                })(window,document,'script','dataLayer',cleanId);
+                (function (w, d, s, l, i) {
+                    w[l] = w[l] || []; w[l].push({
+                        'gtm.start':
+                            new Date().getTime(), event: 'gtm.js'
+                    }); var f = d.getElementsByTagName(s)[0],
+                        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+                })(window, document, 'script', 'dataLayer', cleanId);
             });
         }
 
@@ -269,17 +282,21 @@
             strictTrackersLoaded = true;
 
             if (typeof fbPixel !== 'undefined' && fbPixel) {
-                !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-                n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-                t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-                document,'script','https://connect.facebook.net/en_US/fbevents.js');
+                !function (f, b, e, v, n, t, s) {
+                    if (f.fbq) return; n = f.fbq = function () {
+                        n.callMethod ?
+                        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+                    }; if (!f._fbq) f._fbq = n;
+                    n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
+                    t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+                }(window,
+                    document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
                 fbq('init', fbPixel);
             }
 
             if (typeof clarityId !== 'undefined' && clarityId) {
-                (function(c, l, a, r, i, t, y) {
-                    c[a] = c[a] || function() { (c[a].q = c[a].q || []).push(arguments) };
+                (function (c, l, a, r, i, t, y) {
+                    c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
                     t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
                     y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
                 })(window, document, "clarity", "script", clarityId);
@@ -305,7 +322,7 @@
             loadGMap();
         };
 
-        ['scroll', 'mousemove', 'touchstart', 'click'].forEach(e => window.addEventListener(e, triggerLazyLoad, {once: true, passive: true}));
+        ['scroll', 'mousemove', 'touchstart', 'click'].forEach(e => window.addEventListener(e, triggerLazyLoad, { once: true, passive: true }));
         setTimeout(triggerLazyLoad, 3500);
 
         window.addEventListener('da_consent_given', loadStrictTrackers);

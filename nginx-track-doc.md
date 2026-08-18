@@ -41,6 +41,10 @@ log_format tracking_json escape=json '{'
     '"origem": "$arg_origem", '
     '"id_curto": "$arg_id", '
     '"gclid_fbclid": "$arg_clickid", '
+    '"utm_campaign": "$arg_utm_campaign", '
+    '"utm_medium": "$arg_utm_medium", '
+    '"utm_term": "$arg_utm_term", '
+    '"utm_content": "$arg_utm_content", '
     '"user_agent": "$http_user_agent"'
 '}';
 
@@ -187,5 +191,48 @@ Para extrair todos os dados de todos os tempos e exportar para um único arquivo
 
 ```bash
 zcat -f /var/log/nginx/leads/acupunturacuritiba.com.br.log* > base_completa_cliente.json
+
+```
+
+### 4.4. Relatórios de Origem de Tráfego (Orgânico vs Pago)
+
+Para gerar contagens de cliques agrupadas pela origem de todo o histórico (meses atuais e passados compactados em `.gz`), usamos o `zcat -f` em conjunto com o `jq`.
+
+**(Opcional) Instale o `jq` caso não tenha:**
+
+```bash
+sudo apt install jq -y
+
+```
+
+**Opção A: Agrupar exatamente pelo nome da "origem" mapeada (utm_source):**
+
+```bash
+zcat -f /var/log/nginx/leads/acupunturacuritiba.com.br.log* | jq -r '.origem | if . == "" then "sem_origem/direto" else . end' | sort | uniq -c | sort -nr
+
+```
+
+*Saída de exemplo:*
+
+```text
+   1450 instagram
+    840 sem_origem/direto
+    320 google
+
+```
+
+**Opção B: Contagem precisa de Pago vs Orgânico baseada no Click ID:**
+Uma forma infalível de saber se o tráfego foi pago, independentemente de UTMs se perderem, é verificar a presença do parâmetro `gclid` (Google) ou `fbclid` (Facebook).
+
+```bash
+zcat -f /var/log/nginx/leads/acupunturacuritiba.com.br.log* | jq -r 'if .gclid_fbclid != "" then "Pago (com ClickID)" else "Orgânico/Direto" end' | sort | uniq -c | sort -nr
+
+```
+
+*Saída de exemplo:*
+
+```text
+   2100 Orgânico/Direto
+   1850 Pago (com ClickID)
 
 ```
