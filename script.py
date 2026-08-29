@@ -28,6 +28,11 @@ CLIENTES = [
         "uuid": "726dc3db", 
         "nome": "Imobiliária Manduri",
         "google_place_id": "ChIJuwg85P9S3JQRC6M6yR3yYys"
+    },
+    {
+        "uuid": "a4f89d3c", 
+        "nome": "Ademicon Cascavel",
+        "google_place_id": ""
     }
 ]
 
