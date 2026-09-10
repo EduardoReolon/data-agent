@@ -220,18 +220,21 @@
 
                 link.setAttribute('data-tracked', 'true');
 
-                link.addEventListener('click', () => {
+                link.addEventListener('click', (e) => {
                     const currentDomain = window.location.hostname.replace(/^www\./, '');
+                    
+                    // Validação de Bot
+                    const tipo = (!e.isTrusted || (e.clientX === 0 && e.clientY === 0)) ? "bot" : "humano";
 
-                    // Envio silencioso das UTMs para o Nginx
-                    const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}&domain=${currentDomain}&utm_campaign=${encodeURIComponent(utmCampaign)}&utm_medium=${encodeURIComponent(utmMedium)}&utm_term=${encodeURIComponent(utmTerm)}&utm_content=${encodeURIComponent(utmContent)}`;
+                    // Envio silencioso das UTMs para o Nginx (com o parâmetro &tipo adicionado)
+                    const trackingUrl = `${API_BASE_URL}/track?uuid=${uuid}&origem=${origem}&id=${idCurto}&clickid=${clickId}&domain=${currentDomain}&utm_campaign=${encodeURIComponent(utmCampaign)}&utm_medium=${encodeURIComponent(utmMedium)}&utm_term=${encodeURIComponent(utmTerm)}&utm_content=${encodeURIComponent(utmContent)}&tipo=${tipo}`;
 
                     fetch(trackingUrl, {
                         mode: 'no-cors',
                         keepalive: true
                     }).catch(() => { });
 
-                    if (googleLeads) {
+                    if (googleLeads && tipo === 'humano') {
                         window.dataLayer = window.dataLayer || [];
                         window.dataLayer.push({
                             'event': 'generate_lead',

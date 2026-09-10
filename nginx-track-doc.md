@@ -45,6 +45,7 @@ log_format tracking_json escape=json '{'
     '"utm_medium": "$arg_utm_medium", '
     '"utm_term": "$arg_utm_term", '
     '"utm_content": "$arg_utm_content", '
+    '"tipo": "$arg_tipo", '
     '"user_agent": "$http_user_agent"'
 '}';
 
