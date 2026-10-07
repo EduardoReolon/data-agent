@@ -32,7 +32,7 @@ CLIENTES = [
     {
         "uuid": "a4f89d3c", 
         "nome": "Ademicon Cascavel",
-        "google_place_id": "ChIJ0_la_UfV85QRtV6uas8hX6E"
+        "google_place_id": "ChIJO2Vw1JvV85QRnurTmP2lhp4"
     }
 ]
 
